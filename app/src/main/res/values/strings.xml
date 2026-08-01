@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">Aquateka</string>
+
+    <string name="search">Поиск</string>
+    <string name="all">Всего: </string>
+    <string name="active">Активных: </string>
+    <string name="moved">Перенесено: </string>
+    <string name="next_visit_low">След. визит: </string>
+    <string name="period_low">Пер.: </string>
+
+    <string name="main">Главная</string>
+    <string name="map">Карта</string>
+    <string name="client">Клиенты</string>
+
+    <string name="current_month">Текущий месяц</string>
+    <string name="all_client">Все клиенты</string>
+    <string name="month">Месяц</string>
+
+    <string name="select_action">Выберите действие</string>
+    <string name="completed">Выполнено</string>
+    <string name="postpone">Перенести</string>
+
+    <string name="delete">Удалить</string>
+    <string name="change">Изменить</string>
+
+    <string name="history_visit">История визитов:</string>
+    <string name="comment">Коментарий:</string>
+    <string name="parts">Запчасти:</string>
+    <string name="period">Периодичность:</string>
+    <string name="next_visit">Следующий визит:</string>
+
+    <string name="status_completed">выпполен</string>
+    <string name="status_move">перенос</string>
+    <string name="status_plan">план</string>
 </resources>

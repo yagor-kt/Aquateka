@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="surface">#F2F2F2</color>
+    <color name="text">#444444</color>
+    <color name="dark_surface">#575757</color>
+    <color name="text_hint">#808080</color>
+    <color name="accent">#A7EBFF</color>
+
+    <color name="green">#43B049</color>
+    <color name="orange">#CF9606</color>
+    <color name="blue">#347FF3</color>
 </resources>
