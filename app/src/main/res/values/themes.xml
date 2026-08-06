@@ -1,9 +1,62 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Aquateka" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/dark_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="materialSearchViewStyle">@style/Widget.Material3.SearchView</item>
+
+        <item name="chipStyle">@style/Widget.App.Chip</item>
     </style>
 
     <style name="Theme.Aquateka" parent="Base.Theme.Aquateka" />
+
+    <style name="InfoText">
+        <item name="android:textColor">@color/text</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TitleText">
+        <item name="android:textColor">@color/text</item>
+        <item name="fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:titleMarginStart">14sp</item>
+        <item name="android:titleMarginTop">8sp</item>
+    </style>
+    
+    <style name="SearchView" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="android:hint">@string/search</item>
+        <item name="startIconDrawable">@drawable/ic_search</item>
+        <item name="boxCornerRadiusBottomEnd">28dp</item>
+        <item name="boxCornerRadiusBottomStart">28dp</item>
+        <item name="boxCornerRadiusTopEnd">28dp</item>
+        <item name="boxCornerRadiusTopStart">28dp</item>
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="colorPrimary">@color/blue</item>
+        <item name="boxStrokeColor">@color/blue</item>
+    </style>
+    
+    <style name="Widget.App.Chip" parent="Widget.Material3.Chip.Suggestion">
+        <item name="chipStrokeColor">@color/dark_surface</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/dark_surface</item>
+        <item name="android:textAppearance">@font/inter_bold</item>
+        <item name="chipBackgroundColor">@color/chip_tint</item>
+    </style>
+
+    <style name="RoundedCornerImageStyle">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">3dp</item> <!-- Радиус закругления -->
+</style>
+
+    <style name="Button.IconOnly" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="iconPadding">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
 </resources>

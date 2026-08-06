@@ -3,52 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:theme="@style/Base.Theme.Aquateka"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface"
-    android:paddingTop="5dp"
-    tools:context=".view.MainActivity">
-
-    <ImageButton
-        android:id="@+id/im_month_previous"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="15dp"
-        android:padding="5dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_move"
-        tools:ignore="TouchTargetSizeCheck" />
+    tools:context=".view.CustomersActivity">
 
     <TextView
         android:id="@+id/tv_month"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/inter_bold"
-        android:text="@string/month"
+        android:text="@string/client"
         android:textColor="@color/text"
         android:textSize="20sp"
         android:paddingHorizontal="10dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintStart_toEndOf="@+id/im_month_previous"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/im_month_next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="10dp"
-        android:rotation="180"
-        android:padding="5dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toEndOf="@+id/tv_month"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_move" />
 
     <ImageButton
         android:id="@+id/im_export"
@@ -110,45 +82,29 @@
             style="@style/InfoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/all" />
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="2dp"
             android:layout_height="20dp"
             android:layout_gravity="center"
-            android:layout_marginHorizontal="10dp" />
+            android:layout_marginHorizontal="20dp" />
 
         <TextView
-            android:id="@+id/tv_completed"
+            android:id="@+id/tv_active"
             style="@style/InfoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/complete" />
-
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="2dp"
-            android:layout_height="20dp"
-            android:layout_gravity="center"
-            android:layout_marginHorizontal="10dp" />
-
-        <TextView
-            android:id="@+id/tv_moved"
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/moved" />
+            android:text="@string/active" />
 
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_orders"
+        android:id="@+id/rv_customers"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingTop="15dp"
-        tools:listitem="@layout/card_order_layout"
+        tools:listitem="@layout/card_customer_layout"
         android:layout_marginHorizontal="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -166,6 +122,7 @@
         app:menu="@menu/navigation_menu"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_customer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"

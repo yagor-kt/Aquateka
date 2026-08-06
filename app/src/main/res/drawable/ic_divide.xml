@@ -1,3 +1,12 @@
-<svg width="34" height="5" viewBox="0 0 34 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2.5 2.5H31.5" stroke="#444444" stroke-width="5" stroke-linecap="round"/>
-</svg>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="5dp"
+    android:viewportWidth="34"
+    android:viewportHeight="5">
+  <path
+      android:pathData="M2.5,2.5H31.5"
+      android:strokeWidth="5"
+      android:fillColor="#00000000"
+      android:strokeColor="#444444"
+      android:strokeLineCap="round"/>
+</vector>

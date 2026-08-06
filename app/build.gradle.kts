@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,6 +18,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "MAP_API_kEY", "\"${getMapApiKey()}\"")
     }
 
     buildTypes {
@@ -34,16 +38,34 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
+
+fun getMapApiKey(): String{
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if(localPropertiesFile.exists()){
+        localPropertiesFile.inputStream().use { properties.load(it) }
+    }
+    return properties.getProperty("MAP_API_KEY", "")
+}
+android.buildFeatures.buildConfig = true
 
 dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.recyclerview)
     ksp(libs.androidx.room.compiler)  // Используем ksp вместо kapt
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    implementation("com.yandex.android:maps.mobile:4.2.2-full")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
