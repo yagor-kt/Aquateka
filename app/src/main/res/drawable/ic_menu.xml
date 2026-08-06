@@ -1,3 +1,9 @@
-<svg width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 16.5V13.75H19.5V16.5H0ZM0 9.625V6.875H19.5V9.625H0ZM0 2.75V0H19.5V2.75H0Z" fill="#444444"/>
-</svg>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="17dp"
+    android:viewportWidth="20"
+    android:viewportHeight="17">
+  <path
+      android:pathData="M0,16.5V13.75H19.5V16.5H0ZM0,9.625V6.875H19.5V9.625H0ZM0,2.75V0H19.5V2.75H0Z"
+      android:fillColor="#444444"/>
+</vector>

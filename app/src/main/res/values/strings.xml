@@ -4,6 +4,7 @@
     <string name="search">Поиск</string>
     <string name="all">Всего: </string>
     <string name="active">Активных: </string>
+    <string name="complete">Завершенных: </string>
     <string name="moved">Перенесено: </string>
     <string name="next_visit_low">След. визит: </string>
     <string name="period_low">Пер.: </string>
@@ -11,6 +12,7 @@
     <string name="main">Главная</string>
     <string name="map">Карта</string>
     <string name="client">Клиенты</string>
+    <string name="client_profile">Профиль клиента</string>
 
     <string name="current_month">Текущий месяц</string>
     <string name="all_client">Все клиенты</string>
@@ -32,4 +34,6 @@
     <string name="status_completed">выпполен</string>
     <string name="status_move">перенос</string>
     <string name="status_plan">план</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
