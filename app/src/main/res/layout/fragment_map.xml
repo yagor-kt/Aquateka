@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface"
-    tools:context=".view.MapActivity">
+    tools:context=".view.fragment.MapFragment">
 
     <TextView
         android:id="@+id/tv_month"
@@ -33,6 +33,7 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_month">
 
         <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_map"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
@@ -82,6 +83,7 @@
             android:layout_width="2dp"
             android:layout_height="20dp"
             android:layout_gravity="center"
+            app:dividerColor="@color/dark_surface"
             android:layout_marginHorizontal="20dp"/>
 
         <TextView
@@ -92,43 +94,26 @@
             android:text="@string/active" />
     </LinearLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <com.yandex.mapkit.mapview.MapView
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="300dp"
+        android:layout_margin="12dp"
+        tools:background="@color/dark_surface"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <com.yandex.mapkit.mapview.MapView
-                android:id="@+id/map_view"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_margin="12dp"
-                tools:background="@color/dark_surface"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_orders"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:paddingTop="15dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/map_view"
-                tools:listitem="@layout/card_order_layout" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_orders"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:layout_marginHorizontal="12dp"
+        android:paddingTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/map_view"
+        tools:listitem="@layout/card_order_layout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

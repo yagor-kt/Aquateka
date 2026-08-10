@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
-    tools:context=".view.OrderInfoFragment">
+    tools:context=".view.fragment.OrderInfoFragment">
 
     <ImageView
         android:id="@+id/imageView"

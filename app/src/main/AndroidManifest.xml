@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -13,13 +14,13 @@
         android:theme="@style/Theme.Aquateka"
         tools:targetApi="31">
         <activity
-            android:name=".view.CreateOrderActivity"
+            android:name=".view.activity.CreateOrderActivity"
             android:exported="false" />
         <activity
-            android:name=".view.ProfileCustomerActivity"
+            android:name=".view.activity.ProfileCustomerActivity"
             android:exported="false" />
         <activity
-            android:name=".view.CreateCustomerActivity"
+            android:name=".view.activity.CreateCustomerActivity"
             android:exported="false" />
         <activity
             android:name=".view.CustomersActivity"
@@ -28,7 +29,7 @@
             android:name=".view.MapActivity"
             android:exported="false" />
         <activity
-            android:name=".view.MainActivity"
+            android:name=".view.activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

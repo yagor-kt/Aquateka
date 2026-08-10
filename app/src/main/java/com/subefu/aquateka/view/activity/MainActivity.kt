@@ -1,7 +1,5 @@
-package com.subefu.aquateka.view
+package com.subefu.aquateka.view.activity
 
-import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -9,11 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.subefu.aquateka.BuildConfig
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.ActivityMainBinding
-import com.yandex.mapkit.MapKitFactory
-import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,9 +30,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(binding.navHostFragment.id) as NavHostFragment
+        val navController = navHostFragment.navController
 
+        val bottomNavigationView = binding.botNav
 
-        startActivity(Intent(this, MapActivity::class.java))
-
+        bottomNavigationView.setupWithNavController(navController)
     }
 }
