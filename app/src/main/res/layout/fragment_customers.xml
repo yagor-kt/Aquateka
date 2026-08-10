@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface"
-    tools:context=".view.CustomersActivity">
+    tools:context=".view.fragment.CustomersFragment">
 
     <TextView
         android:id="@+id/tv_month"
@@ -88,6 +88,7 @@
             android:layout_width="2dp"
             android:layout_height="20dp"
             android:layout_gravity="center"
+            app:dividerColor="@color/dark_surface"
             android:layout_marginHorizontal="20dp" />
 
         <TextView
@@ -104,22 +105,12 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingTop="15dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/card_customer_layout"
         android:layout_marginHorizontal="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/navigation_menu"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_customer"
@@ -130,7 +121,7 @@
         android:src="@drawable/ic_add"
         app:tint="@color/white"
         android:backgroundTint="@color/dark_surface"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface"
-    tools:context=".view.CreateCustomerActivity">
+    tools:context=".view.activity.CreateCustomerActivity">
 
     <TextView
         android:id="@+id/tv_title"
@@ -124,6 +124,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Отмена"
+            android:textColor="@color/text"
             app:icon="@drawable/ic_close"
             style="?attr/materialButtonOutlinedStyle" />
 

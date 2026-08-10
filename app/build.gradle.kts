@@ -59,6 +59,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     ksp(libs.androidx.room.compiler)  // Используем ksp вместо kapt
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
