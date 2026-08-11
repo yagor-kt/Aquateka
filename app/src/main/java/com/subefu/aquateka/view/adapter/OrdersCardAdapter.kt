@@ -1,16 +1,18 @@
 package com.subefu.aquateka.view.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.databinding.CardOrderLayoutBinding
+import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.utils.MyDiffCallback
 
 class OrdersCardAdapter(
-    var orders: List<String>,
-    val onItemClick: (String) -> Unit,
-    val onLongItemClick: (String) -> Unit,
+    var orders: List<VisitWithClient>,
+    val onItemClick: (VisitWithClient) -> Unit,
+    val onLongItemClick: (VisitWithClient) -> Unit,
 ):
     RecyclerView.Adapter<OrdersCardAdapter.OrdersCardViewHolder>(){
 
@@ -22,35 +24,44 @@ class OrdersCardAdapter(
     }
 
     override fun onBindViewHolder(holder: OrdersCardViewHolder, position: Int) {
-        holder.bind(position)
+        Log.d("MyAdapter", "bind")
+        holder.bind(orders[position])
     }
 
     override fun getItemCount() = orders.size
 
-    fun updateList(newList: List<String>){
-        val diffCallback = MyDiffCallback(newList, orders)
+    fun updateList(newList: List<VisitWithClient>){
+        Log.d("MyAdapter", "newList $newList")
+        Log.d("MyAdapter", "oldList $orders")
+        val diffCallback = MyDiffCallback(newList = newList, oldList = orders)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         orders = newList
         diffResult.dispatchUpdatesTo(this)
     }
 
     inner class OrdersCardViewHolder(val binding: CardOrderLayoutBinding): RecyclerView.ViewHolder(binding.root){
-        fun bind(position: Int){
-            binding.tvName.text = orders[position]
-            binding.root.setOnClickListener{
-                val actualPos = this.bindingAdapterPosition
-                if(actualPos != position)
+        init {
+            binding.root.setOnClickListener {
+                val actualPos = bindingAdapterPosition
+                if (actualPos != RecyclerView.NO_POSITION) {
                     onItemClick(orders[actualPos])
-                else
-                    onItemClick(orders[position])
+                }
             }
-            binding.root.setOnLongClickListener{
-                val actualPos = this.bindingAdapterPosition
-                if(actualPos != position)
+            binding.root.setOnLongClickListener {
+                val actualPos = bindingAdapterPosition
+                if (actualPos != RecyclerView.NO_POSITION) {
                     onLongItemClick(orders[actualPos])
-                else
-                    onLongItemClick(orders[position])
-                false
+                }
+                true
+            }
+        }
+        fun bind(item: VisitWithClient) {
+            binding.apply {
+                tvName.text = item.client.name
+                tvDate.text = item.visit.actual_date.toString()
+                tvPhone.text = item.client.phone
+                tvPrice.text = item.visit.price.toString()
+                tvStatus.text = item.visit.status
             }
         }
     }

@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/inter_bold"
-        android:text="@string/month"
+        tools:text="@string/month"
         android:textColor="@color/text"
         android:textSize="20sp"
         android:paddingHorizontal="10dp"
@@ -48,6 +48,20 @@
         app:layout_constraintStart_toEndOf="@+id/tv_month"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_move" />
+
+    <TextView
+        android:id="@+id/tv_year"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_bold"
+        android:paddingHorizontal="10dp"
+        tools:text="@string/month"
+        android:textColor="@color/text"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/im_month_next"
+        app:layout_constraintEnd_toStartOf="@+id/im_import"
+        app:layout_constraintStart_toEndOf="@+id/im_month_next"
+        app:layout_constraintTop_toTopOf="@+id/im_month_next" />
 
     <ImageButton
         android:id="@+id/im_export"

@@ -62,7 +62,7 @@ class CustomersFragment : Fragment() {
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
             //todo(сделать фильтрацию по нескольким полям)
             val newList = list.filter { it.contains(text.toString()) }
-            rvAdapter.updateList(newList)
+            //rvAdapter.updateList(newList)
         }
 
         binding.imExport.setOnClickListener {
