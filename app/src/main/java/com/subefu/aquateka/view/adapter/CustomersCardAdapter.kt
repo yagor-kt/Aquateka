@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.databinding.CardCustomerLayoutBinding
+import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.view.utils.MyDiffCallback
 
 class CustomersCardAdapter(
@@ -25,12 +26,12 @@ class CustomersCardAdapter(
 
     override fun getItemCount() = customers.size
 
-    fun updateList(newList: List<String>){
-        //todo(сделать другой diffUtill)
-        val diffCallback = MyDiffCallback(newList, customers)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        customers = newList
-        diffResult.dispatchUpdatesTo(this)
+    fun updateList(newList: List<Client>){
+//        //todo(сделать другой diffUtill)
+//        val diffCallback = MyDiffCallback(newList, customers)
+//        val diffResult = DiffUtil.calculateDiff(diffCallback)
+//        customers = newList
+//        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class CustomersCardViewHolder(val binding: CardCustomerLayoutBinding)

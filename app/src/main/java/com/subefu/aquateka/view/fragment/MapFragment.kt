@@ -43,24 +43,20 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        rvAdapter = OrdersCardAdapter(
-            listOf("a", "b", "c"),
-            onItemClick = {
+        rvAdapter = OrdersCardAdapter(emptyList(), onItemClick = {
                 item ->
             val bottomSheet = OrderInfoFragment.newInstance(
                 //TODO(сюда передать объект order, реализовать у него parcelable)
-                title = item,
+                title = item.client.name,
                 description = "some desc"
             )
             bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
-        },
-            onLongItemClick = {
+        }, onLongItemClick = {
                 item ->
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Завершить заказ?")
                 .setNegativeButton("Перенести"){dialog, witch ->
                     dialog.cancel()
-
                 }
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
@@ -70,8 +66,7 @@ class MapFragment : Fragment() {
                     dialog.cancel()
                 })
             builder.show()
-        }
-        )
+        })
 
         binding.rvOrders.apply {
             adapter = rvAdapter

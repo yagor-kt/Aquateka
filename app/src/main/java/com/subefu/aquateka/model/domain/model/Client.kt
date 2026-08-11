@@ -1,0 +1,13 @@
+package com.subefu.aquateka.model.domain.model
+
+data class Client(
+    val cllietn_id: Int,
+    val name: String,
+    val phone: String,
+    val address: String?,
+    val latitude: Float,
+    val longitude: Float,
+    val period_month: Int?,
+    val comment: String,
+    val create_at: Int?
+)
