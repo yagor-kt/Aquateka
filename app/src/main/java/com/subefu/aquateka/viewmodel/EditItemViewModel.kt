@@ -62,6 +62,54 @@ class EditItemViewModel(private val repository: Repository): ViewModel() {
             }
         }
     }
+
+    fun deleteClient(client: Client){
+        viewModelScope.launch {
+            try {
+                repository.deleteClient(client)
+                Log.d("MyVM", "клиент удален успешно")
+            }catch (e: Exception){
+                Log.d("MyLog", "some bag @EditItemViewModel---deleteClient {${e.message}}")
+            }
+        }
+    }
+
+
+
+    fun deleteVisit(visit: Visit){
+        viewModelScope.launch {
+            try {
+                repository.deleteVisit(visit)
+                Log.d("MyVM", "визит удален успешно")
+            }catch (e: Exception){
+                Log.d("MyLog", "some bag @EditItemViewModel---deleteVisit {${e.message}}")
+            }
+        }
+    }
+
+    fun updateVisit(visit: Visit){
+        viewModelScope.launch {
+            try {
+                repository.updateVisit(visit)
+                Log.d("MyVM", "визит изменен успешно")
+            }catch (e: Exception){
+                Log.d("MyLog", "some bag @EditItemViewModel---deleteVisit {${e.message}}")
+            }
+        }
+    }
+
+    fun updateClient(client: Client){
+        viewModelScope.launch {
+            try {
+                repository.updateClient(client)
+                Log.d("MyVM", "клиент изменен успешно")
+            }catch (e: Exception){
+                Log.d("MyLog", "some bag @EditItemViewModel---deleteVisit {${e.message}}")
+            }
+        }
+    }
+
+
 }
 class EditItemViewModelFactory(private val repository: Repository): ViewModelProvider.Factory{
     @RequiresApi(Build.VERSION_CODES.O)

@@ -1,6 +1,7 @@
 package com.subefu.aquateka.view.fragment
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
@@ -10,22 +11,31 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentOrderInfoBinding
+import com.subefu.aquateka.model.data.db.DataBase
+import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
+import com.subefu.aquateka.view.activity.CreateOrderActivity
 import com.subefu.aquateka.view.activity.ProfileCustomerActivity
+import com.subefu.aquateka.viewmodel.EditItemViewModel
+import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.getValue
 
+@RequiresApi(Build.VERSION_CODES.O)
 class OrderInfoFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentOrderInfoBinding? = null
@@ -39,6 +49,13 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
             arguments?.getParcelable(ARG_VISIT_ITEM)
         }
     }
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+    private val viewModel: EditItemViewModel by viewModels{
+        val dataBase = DataBase.getDB(requireContext().applicationContext)
+        val repository = RepositoryImpl(dataBase.getDao())
+        EditItemViewModelFactory(repository)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,17 +66,14 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("ResourceAsColor")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
         val visitWithClient = visitWithClient ?: throw Exception("null visit")
         val visit = visitWithClient.visit
         val client = visitWithClient.client
 
-        val customerInfo = "ФИО: ${client.name}\nТелефон: ${client.phone}\nКоординаты: ${client.latitude}/${client.longitude}\nАдрес: ${client.address ?: "нет"}"
+        val customerInfo = "ФИО: ${client.name}\nТелефон: ${client.phone}\nКоординаты: ${visit.latitude}/${visit.longitude}\nАдрес: ${client.address ?: "нет"}"
         val visitInfo = "Цена: ${visit.price}\nКоментарий: ${visit.comment}\nЗапчасти: ${visit.parts}"
         val nextVisit = LocalDate.of(visit.planned_year, visit.planned_month, 1)
             .plusMonths(visit.period.toLong())
@@ -92,6 +106,39 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
                 }
                 startActivity(intent)
             }
+        }
+
+        binding.btDelete.setOnClickListener {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("Удалить визит ${client.name}?")
+                .setMessage("ВЫ хотите удалить визит ${client.name} по координатам ${visit.latitude}/${visit.longitude}? Отменить это действие невозможно!")
+                .setNegativeButton("НЕТ"){dialog, witch ->
+                    dialog.cancel()
+                }
+                .setPositiveButton("ДА"){dialog, witch ->
+                    dialog.cancel()
+                    viewModel.deleteVisit(visit)
+                    this@OrderInfoFragment.dismiss()
+                }
+            builder.show()
+        }
+
+        binding.btEdit.setOnClickListener {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("Изменить визит \"${client.name}?\"")
+                .setMessage("ВЫ хотите изменить визит \"${client.name}\" по координатам ${visit.latitude}/${visit.longitude}?\nОтменить это действие невозможно!")
+                .setNegativeButton("НЕТ"){dialog, witch ->
+                    dialog.cancel()
+                }
+                .setPositiveButton("ДА"){dialog, witch ->
+                    dialog.cancel()
+                    val intent = Intent(requireContext(), CreateOrderActivity::class.java).apply {
+                        putExtra(MyConst.VISIT_WITH_CLIENT, visitWithClient)
+                    }
+                    startActivity(intent)
+                    this@OrderInfoFragment.dismiss()
+                }
+            builder.show()
         }
         Log.d("MyOrderInfo-open", visitWithClient.toString())
     }
