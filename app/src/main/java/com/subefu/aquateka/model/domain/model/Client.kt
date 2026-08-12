@@ -1,5 +1,9 @@
 package com.subefu.aquateka.model.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Client(
     val cllietn_id: Int,
     val name: String,
@@ -10,4 +14,4 @@ data class Client(
     val period_month: Int?,
     val comment: String,
     val create_at: Int?
-)
+): Parcelable

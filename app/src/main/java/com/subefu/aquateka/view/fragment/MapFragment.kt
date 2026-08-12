@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.subefu.aquateka.databinding.FragmentMapBinding
+import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.OrdersCardAdapter
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
@@ -45,12 +46,10 @@ class MapFragment : Fragment() {
 
         rvAdapter = OrdersCardAdapter(emptyList(), onItemClick = {
                 item ->
-            val bottomSheet = OrderInfoFragment.newInstance(
-                //TODO(сюда передать объект order, реализовать у него parcelable)
-                title = item.client.name,
-                description = "some desc"
-            )
-            bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
+//            val bottomSheet = OrderInfoFragment.newInstance(
+//                VisitWithClient()
+//            )
+//            bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
         }, onLongItemClick = {
                 item ->
             val builder = AlertDialog.Builder(requireContext())

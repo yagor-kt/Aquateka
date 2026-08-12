@@ -1,6 +1,9 @@
 package com.subefu.aquateka.model.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Visit(
     val id: Int,
     val clientId: Int,
@@ -12,6 +15,7 @@ data class Visit(
     val price: Int,
     val parts: String,
     val comment: String,
+    val period: Int,
     val created_at: Int,
     val updated_at: Int,
-)
+): Parcelable
