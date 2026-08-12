@@ -7,6 +7,9 @@ import kotlinx.parcelize.Parcelize
 data class Visit(
     val id: Int,
     val clientId: Int,
+    val address: String?,
+    val latitude: Float,
+    val longitude: Float,
     val planned_month: Int,
     val planned_year: Int,
     val actual_date: Int,
@@ -15,7 +18,5 @@ data class Visit(
     val price: Int,
     val parts: String,
     val comment: String,
-    val period: Int,
-    val created_at: Int,
-    val updated_at: Int,
+    val period: Int
 ): Parcelable

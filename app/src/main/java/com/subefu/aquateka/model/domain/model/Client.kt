@@ -12,6 +12,5 @@ data class Client(
     val latitude: Float,
     val longitude: Float,
     val period_month: Int?,
-    val comment: String,
-    val create_at: Int?
+    val comment: String
 ): Parcelable

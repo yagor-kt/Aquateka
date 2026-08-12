@@ -12,7 +12,7 @@ import com.subefu.aquateka.model.data.entity.VisitEntity
 
 @Database(
     entities = [ClientEntity::class, VisitEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class DataBase: RoomDatabase() {
@@ -26,7 +26,7 @@ abstract class DataBase: RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     DataBase::class.java,
-                    "my_database1.db"
+                    "my_database3.db"
                 ).build()
                 INSTANCE = instance
                 instance

@@ -35,5 +35,5 @@ interface DAO {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateClient(client: ClientEntity)
     @Delete
-    suspend fun deleteVisit(client: ClientEntity)
+    suspend fun deleteClient(client: ClientEntity)
 }
