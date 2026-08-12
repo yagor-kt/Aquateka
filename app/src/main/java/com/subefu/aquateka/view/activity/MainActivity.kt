@@ -56,11 +56,5 @@ class MainActivity : AppCompatActivity() {
             val navController = navHostFragment.navController
             setupWithNavController(navController)
         }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel
-            }
-        }
     }
 }

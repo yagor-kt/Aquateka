@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import androidx.core.os.bundleOf
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentOrderInfoBinding
+import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.ProfileCustomerActivity
 import java.time.Instant
@@ -78,9 +80,9 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
             tvStatus.text = visit.status
             tvDate.text = actualDate
             ivStatusColor.imageTintList = when(visit.status){
-                "COMPLETED" -> ContextCompat.getColorStateList(requireContext(), R.color.green)
-                "POSTPONED" -> ContextCompat.getColorStateList(requireContext(), R.color.blue)
-                "PLANNED" -> ContextCompat.getColorStateList(requireContext(), R.color.orange)
+                MyConst.COMPLETED -> ContextCompat.getColorStateList(requireContext(), R.color.green)
+                MyConst.POSTPONED -> ContextCompat.getColorStateList(requireContext(), R.color.blue)
+                MyConst.PLANNED -> ContextCompat.getColorStateList(requireContext(), R.color.orange)
                 else -> ContextCompat.getColorStateList(requireContext(), R.color.dark_surface)
             }
 
@@ -91,6 +93,7 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
                 startActivity(intent)
             }
         }
+        Log.d("MyOrderInfo-open", visitWithClient.toString())
     }
 
     override fun onDestroyView() {

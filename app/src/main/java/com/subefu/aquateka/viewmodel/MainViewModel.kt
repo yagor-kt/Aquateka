@@ -44,13 +44,13 @@ class MainViewModel(private val repository: Repository): ViewModel() {
     fun generateCsvData(visits: List<VisitWithClient>): String {
         val sb = StringBuilder()
         // Заголовок таблицы (колонки должны строго соответствовать вашей Entity для импорта)
-        sb.append("id;clientName;plannedMonth;plannedYear;actualDate;status;workType;price;parts;comment;createdAt;updatedAt\n")
+        sb.append("id;address;latitude;longitude;clientName;plannedMonth;plannedYear;actualDate;status;workType;price;parts;comment;createdAt;updatedAt\n")
 
         // Заполнение данными
         for (v in visits) {
-            sb.append("${v.visit.id};${v.client.name};${v.visit.planned_month};")
+            sb.append("${v.visit.id};${v.visit.address};${v.visit.latitude};${v.visit.longitude};${v.visit.planned_month};")
             sb.append("${v.visit.planned_year};${v.visit.actual_date};${v.visit.status};${v.visit.work_type};")
-            sb.append("${v.visit.price};${v.visit.parts};${v.visit.comment};${v.visit.created_at};${v.visit.updated_at}\n")
+            sb.append("${v.visit.price};${v.visit.parts};${v.visit.comment}")
         }
         return sb.toString()
     }

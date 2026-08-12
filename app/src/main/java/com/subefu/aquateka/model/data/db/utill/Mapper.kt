@@ -6,6 +6,7 @@ import com.subefu.aquateka.model.data.entity.VisitWithClientEntity
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
+import kotlin.String
 
 fun VisitWithClientEntity.toModel() = VisitWithClient(
     this.visit.toModel(),
@@ -14,8 +15,11 @@ fun VisitWithClientEntity.toModel() = VisitWithClient(
 
 fun VisitEntity.toModel()
     = Visit(
-     this.id,
+        this.id ?: 0,
         this.clientId,
+        this.address,
+        this.latitude,
+        this.longitude,
         this.plannedMonth,
         this.plannedYear,
         this.actualDate,
@@ -25,13 +29,11 @@ fun VisitEntity.toModel()
         this.parts,
         this.comment,
         this.period,
-        this.createdAt,
-        this.updatedAt,
     )
 
 fun ClientEntity.toModel()
     = Client(
-        this.clientId,
+        this.clientId ?: 0,
         this.name,
         this.phone,
         this.address,
@@ -39,5 +41,34 @@ fun ClientEntity.toModel()
         this.longitude,
         this.periodMonth,
         this.comment,
-        this.createAt,
     )
+
+fun Visit.toEntity()
+    = VisitEntity(
+    if(this.id == 0) null else this.id,
+    this.clientId,
+    this.address,
+    this.latitude,
+    this.longitude,
+    this.planned_month,
+    this.planned_year,
+    this.actual_date,
+    this.status,
+    this.work_type,
+    this.price,
+    this.parts,
+    this.period,
+    this.comment,
+)
+
+fun Client.toEntity()
+    = ClientEntity(
+    if(this.cllietn_id == 0) null else this.cllietn_id,
+    this.name,
+    this.phone,
+    this.address,
+    this.latitude,
+    this.longitude,
+    this.period_month,
+    this.comment
+)

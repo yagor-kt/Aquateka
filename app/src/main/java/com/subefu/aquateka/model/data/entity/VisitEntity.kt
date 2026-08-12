@@ -19,9 +19,12 @@ import androidx.room.PrimaryKey
 )
 data class VisitEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int?,
     @ColumnInfo(index = true)
     val clientId: Int,
+    val address: String?,
+    val latitude: Float,
+    val longitude: Float,
     val plannedMonth: Int,
     val plannedYear: Int,
     val actualDate: Int,
@@ -30,7 +33,5 @@ data class VisitEntity(
     val price: Int,
     val parts: String,
     val period: Int,
-    val comment: String,
-    val createdAt: Int,
-    val updatedAt: Int,
+    val comment: String
 )

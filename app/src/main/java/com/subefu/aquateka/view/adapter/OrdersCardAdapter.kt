@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.CardOrderLayoutBinding
+import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.utils.MyDiffCallback
 
@@ -61,15 +62,15 @@ class OrdersCardAdapter(
         fun bind(item: VisitWithClient) {
             binding.apply {
                 tvName.text = item.client.name
-                tvDate.text = item.visit.actual_date.toString()
+                tvDate.text = if(item.visit.actual_date == 0) "---" else item.visit.actual_date.toString()
                 tvPhone.text = item.client.phone
-                tvPrice.text = item.visit.price.toString()
+                tvPrice.text = "${item.visit.price}₽"
                 tvStatus.text = item.visit.status
 
                 ivStatusColor.imageTintList = when(item.visit.status){
-                    "COMPLETED" -> ContextCompat.getColorStateList(binding.root.context, R.color.green)
-                    "POSTPONED" -> ContextCompat.getColorStateList(binding.root.context, R.color.blue)
-                    "PLANNED" -> ContextCompat.getColorStateList(binding.root.context, R.color.orange)
+                    MyConst.COMPLETED -> ContextCompat.getColorStateList(binding.root.context, R.color.green)
+                    MyConst.POSTPONED -> ContextCompat.getColorStateList(binding.root.context, R.color.blue)
+                    MyConst.PLANNED -> ContextCompat.getColorStateList(binding.root.context, R.color.orange)
                     else -> ContextCompat.getColorStateList(binding.root.context, R.color.dark_surface)
                 }
             }
