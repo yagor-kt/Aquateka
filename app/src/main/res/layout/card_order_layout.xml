@@ -23,8 +23,8 @@
                 android:id="@+id/iv_status_color"
                 android:layout_width="10dp"
                 android:layout_height="10dp"
+                android:src="@drawable/square"
                 android:layout_gravity="center"
-                android:background="@color/green"
                 app:shapeAppearanceOverlay="@style/RoundedCornerImageStyle" />
 
             <TextView

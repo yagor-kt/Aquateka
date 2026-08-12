@@ -1,5 +1,15 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.3.0" apply false // укажите вашу версию AGP
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false // укажите вашу версию Kotlin
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+}
+subprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-serialization")) {
+                useVersion("1.6.3")
+                because("Fixes Room binary incompatibility AbstractMethodError")
+            }
+        }
+    }
 }

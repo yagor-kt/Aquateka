@@ -29,10 +29,11 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_status_color"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/square"
             android:layout_gravity="center"
-            android:background="@color/green"
+            android:background="@android:color/transparent"
             app:shapeAppearanceOverlay="@style/RoundedCornerImageStyle" />
 
         <TextView

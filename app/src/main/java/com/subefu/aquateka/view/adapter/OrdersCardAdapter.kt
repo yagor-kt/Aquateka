@@ -3,8 +3,11 @@ package com.subefu.aquateka.view.adapter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.CardOrderLayoutBinding
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.utils.MyDiffCallback
@@ -62,6 +65,13 @@ class OrdersCardAdapter(
                 tvPhone.text = item.client.phone
                 tvPrice.text = item.visit.price.toString()
                 tvStatus.text = item.visit.status
+
+                ivStatusColor.imageTintList = when(item.visit.status){
+                    "COMPLETED" -> ContextCompat.getColorStateList(binding.root.context, R.color.green)
+                    "POSTPONED" -> ContextCompat.getColorStateList(binding.root.context, R.color.blue)
+                    "PLANNED" -> ContextCompat.getColorStateList(binding.root.context, R.color.orange)
+                    else -> ContextCompat.getColorStateList(binding.root.context, R.color.dark_surface)
+                }
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.subefu.aquateka.view.fragment
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,13 +10,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentOrderInfoBinding
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.ProfileCustomerActivity
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class OrderInfoFragment : BottomSheetDialogFragment() {
@@ -39,27 +46,43 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
         return binding.root
     }
 
+    @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
         val visitWithClient = visitWithClient ?: throw Exception("null visit")
         val visit = visitWithClient.visit
         val client = visitWithClient.client
 
-        val customerInfo = "${client.name}\n${client.phone}\n${client.latitude}/${client.longitude}\n${client.address}"
-        val visitInfo = "${visit.price}\nКоментарий: ${visit.comment}\nЗапчасти: ${client.name}"
-        val nextVisit = LocalDate.of(visit.planned_year, visit.planned_month, 1).run {
-            plusMonths(visit.period.toLong())
-            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-            this.format(formatter)
-        }
+        val customerInfo = "ФИО: ${client.name}\nТелефон: ${client.phone}\nКоординаты: ${client.latitude}/${client.longitude}\nАдрес: ${client.address ?: "нет"}"
+        val visitInfo = "Цена: ${visit.price}\nКоментарий: ${visit.comment}\nЗапчасти: ${visit.parts}"
+        val nextVisit = LocalDate.of(visit.planned_year, visit.planned_month, 1)
+            .plusMonths(visit.period.toLong())
+            .format(formatter)
+
         val periodInfo = "Периодичность: ${visit.period}\nСледующий визит: ${nextVisit}"
+        val actualDate = if(visit.actual_date != 0){
+            Instant.ofEpochMilli(visit.actual_date.toLong())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate().format(formatter)
+        }
+        else "---"
 
         binding.apply {
             tvCustomerInfo.text = customerInfo
             tvOrderInfo.text = visitInfo
             tvPeriodInfo.text = periodInfo
+            tvStatus.text = visit.status
+            tvDate.text = actualDate
+            ivStatusColor.imageTintList = when(visit.status){
+                "COMPLETED" -> ContextCompat.getColorStateList(requireContext(), R.color.green)
+                "POSTPONED" -> ContextCompat.getColorStateList(requireContext(), R.color.blue)
+                "PLANNED" -> ContextCompat.getColorStateList(requireContext(), R.color.orange)
+                else -> ContextCompat.getColorStateList(requireContext(), R.color.dark_surface)
+            }
 
             tvCustomerInfo.setOnClickListener {
                 val intent = Intent(requireContext(), ProfileCustomerActivity::class.java).apply {
