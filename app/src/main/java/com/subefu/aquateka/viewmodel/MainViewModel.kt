@@ -8,10 +8,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -38,6 +41,19 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         }
     }
 
+    fun generateCsvData(visits: List<VisitWithClient>): String {
+        val sb = StringBuilder()
+        // Заголовок таблицы (колонки должны строго соответствовать вашей Entity для импорта)
+        sb.append("id;clientName;plannedMonth;plannedYear;actualDate;status;workType;price;parts;comment;createdAt;updatedAt\n")
+
+        // Заполнение данными
+        for (v in visits) {
+            sb.append("${v.visit.id};${v.client.name};${v.visit.planned_month};")
+            sb.append("${v.visit.planned_year};${v.visit.actual_date};${v.visit.status};${v.visit.work_type};")
+            sb.append("${v.visit.price};${v.visit.parts};${v.visit.comment};${v.visit.created_at};${v.visit.updated_at}\n")
+        }
+        return sb.toString()
+    }
 }
 class MainViewModelFactory(private val repository: Repository): ViewModelProvider.Factory{
     @RequiresApi(Build.VERSION_CODES.O)

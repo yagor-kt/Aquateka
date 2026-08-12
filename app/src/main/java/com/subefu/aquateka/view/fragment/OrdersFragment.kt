@@ -3,6 +3,7 @@ package com.subefu.aquateka.view.fragment
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -25,7 +27,9 @@ import com.subefu.aquateka.view.activity.CreateOrderActivity
 import com.subefu.aquateka.view.adapter.OrdersCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -42,6 +46,10 @@ class OrdersFragment : Fragment() {
     private lateinit var rvAdapter: OrdersCardAdapter
     var currantDay = LocalDate.now()
     var currentVisits = listOf<VisitWithClient>()
+    private var csvTextToWrite = ""
+    val createCsvLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/comma-separated-values")) { uri ->
+        uri?.let { saveCsvToUri(it, csvTextToWrite) }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,20 +71,23 @@ class OrdersFragment : Fragment() {
         }
 
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
-            //TODO("реализовать условия поиска")
-            val newList = currentVisits.filter {
-                it.client.name.lowercase().contains(text.toString().lowercase())
-            }
-            rvAdapter.updateList(newList)
+            val nameList = currentVisits.filter {
+                it.client.name.lowercase().contains(text.toString().lowercase().trim())
+            }.toSet()
+            val phoneList = currentVisits.filter {
+                it.client.phone.lowercase().contains(text.toString().lowercase().trim())
+            }.toSet()
 
-            //TODO(Сделать расчет по данным списка)
+            val newList = nameList.union(phoneList).toList()
+            rvAdapter.updateList(newList)
             updateShortInfo(newList)
         }
 
         //TODO("сделать экспорт/импорт")
         binding.imExport.setOnClickListener {
-            Toast.makeText(requireContext(), "Экспорт в разработке", Toast.LENGTH_SHORT).show()
-            //TODO(Сделать экспорт заказов по текущему месяцу)
+            val month = binding.tvMonth.text.toString()
+            val year = binding.tvYear.text.toString()
+            exportVisitsToCsv(month, year)
         }
         binding.imImport.setOnClickListener {
             Toast.makeText(requireContext(), "Импорт в разработке", Toast.LENGTH_SHORT).show()
@@ -100,9 +111,7 @@ class OrdersFragment : Fragment() {
             emptyList(),
             onItemClick = { item ->
                 val bottomSheet = OrderInfoFragment.newInstance(
-                    //TODO(сюда передать объект order, реализовать у него parcelable)
-                    title = item.client.name,
-                    description = "some desc"
+                    visit = item,
                 )
                 bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
             },
@@ -150,6 +159,30 @@ class OrdersFragment : Fragment() {
             tvAll.text = "Всего: $all"
             tvCompleted.text = "Завершенных: $completed"
             tvMoved.text = "Перенесено: $moved"
+        }
+    }
+
+    fun exportVisitsToCsv(month: String, year: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val visits = currentVisits
+            val csvContent = sharedViewModel.generateCsvData(visits)
+
+            withContext(Dispatchers.Main) {
+                csvTextToWrite = csvContent
+                // Открывает системное окно, где пользователь выберет папку "Загрузки" и введет имя файла
+                createCsvLauncher.launch("visits_${year}_${month}.csv")
+            }
+        }
+    }
+
+    fun saveCsvToUri(uri: Uri, content: String) {
+        try {
+            requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(content.toByteArray(Charsets.UTF_8))
+                Toast.makeText(context, "Файл успешно сохранен!", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Ошибка сохранения: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 

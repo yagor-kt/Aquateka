@@ -24,6 +24,7 @@ fun VisitEntity.toModel()
         this.price,
         this.parts,
         this.comment,
+        this.period,
         this.createdAt,
         this.updatedAt,
     )

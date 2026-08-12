@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+    id("kotlin-parcelize")
+    id("androidx.room") version "2.8.1"
 }
 
 android {
@@ -42,6 +44,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 fun getMapApiKey(): String{

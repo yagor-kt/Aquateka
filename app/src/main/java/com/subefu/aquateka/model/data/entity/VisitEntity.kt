@@ -29,6 +29,7 @@ data class VisitEntity(
     val workType: String,
     val price: Int,
     val parts: String,
+    val period: Int,
     val comment: String,
     val createdAt: Int,
     val updatedAt: Int,
