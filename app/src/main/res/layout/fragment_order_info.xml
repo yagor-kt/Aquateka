@@ -99,10 +99,45 @@
         style="@style/InfoText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_marginStart="12dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/divider"
         tools:text="Desctiption customer \nOn some line" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider">
+
+        <Button
+            android:id="@+id/bt_delete"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="УДАЛИТЬ"
+            android:textColor="@color/text"
+            app:icon="@drawable/ic_delete" />
+
+        <Button
+            android:id="@+id/bt_edit"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1"
+            android:text="ИЗМЕНИТЬ"
+            android:textColor="@color/text"
+            app:icon="@drawable/ic_edit" />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
