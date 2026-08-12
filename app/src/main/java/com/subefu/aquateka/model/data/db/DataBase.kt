@@ -13,10 +13,7 @@ import com.subefu.aquateka.model.data.entity.VisitEntity
 @Database(
     entities = [ClientEntity::class, VisitEntity::class],
     version = 2,
-    autoMigrations = [
-        AutoMigration(from = 1, to = 2)
-    ],
-    exportSchema = true
+    exportSchema = false
 )
 abstract class DataBase: RoomDatabase() {
     abstract fun getDao(): DAO
@@ -29,7 +26,7 @@ abstract class DataBase: RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     DataBase::class.java,
-                    "my_database.db"
+                    "my_database1.db"
                 ).build()
                 INSTANCE = instance
                 instance

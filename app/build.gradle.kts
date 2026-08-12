@@ -50,6 +50,10 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+ksp{
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 fun getMapApiKey(): String{
     val properties = Properties()
     val localPropertiesFile = rootProject.file("local.properties")
@@ -74,6 +78,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     implementation("com.yandex.android:maps.mobile:4.2.2-full")
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
