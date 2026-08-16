@@ -79,6 +79,7 @@ class CreateOrderActivity : AppCompatActivity() {
                 binding.apply {
                     tfAddress.editText?.setText(it.address ?: "")
                     tfCoordinate.editText?.setText("${it.latitude},${it.longitude}")
+                    tfPeriod.editText?.setText((it.period_month ?: 0).toString())
                 }
             }
         }
@@ -104,6 +105,9 @@ class CreateOrderActivity : AppCompatActivity() {
                 }
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
+
+                    if(checkFillDataVisit().not()) return@setPositiveButton
+
                     val visit = Visit(
                         id = currentVisit?.id ?: 0,
                         clientId = currentClient?.cllietn_id ?: throw NullPointerException("Введите клиента"),
@@ -178,6 +182,17 @@ class CreateOrderActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    fun checkFillDataVisit(): Boolean{
+        if (binding.tfName.editText?.text?.trim()?.isEmpty() == true) {
+            binding.tvName.error = "Это поле обязательно для заполнения"
+            return false
+        } else {
+            binding.tvName.error = null
+        }
+
+        return true
     }
 
     override fun onDestroy() {
