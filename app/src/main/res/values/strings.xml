@@ -2,12 +2,12 @@
     <string name="app_name">Aquateka</string>
 
     <string name="search">Поиск</string>
-    <string name="all">Всего: </string>
-    <string name="active">Активных: </string>
-    <string name="complete">Завершенных: </string>
-    <string name="moved">Перенесено: </string>
+    <string name="all">Всего: 0</string>
+    <string name="active">Активных: 0</string>
+    <string name="complete">Завершенных: 0</string>
+    <string name="moved">Перенесено: 0</string>
     <string name="next_visit_low">След. визит: </string>
-    <string name="period_low">Пер.: </string>
+    <string name="period_low">Пер.: 0</string>
 
     <string name="main">Главная</string>
     <string name="map">Карта</string>

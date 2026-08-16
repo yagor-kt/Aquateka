@@ -3,7 +3,6 @@ package com.subefu.aquateka.view.adapter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +10,7 @@ import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.CardOrderLayoutBinding
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
-import com.subefu.aquateka.view.utils.MyDiffCallback
+import com.subefu.aquateka.view.utils.VisitDiffCallback
 
 class OrdersCardAdapter(
     var orders: List<VisitWithClient>,
@@ -37,7 +36,7 @@ class OrdersCardAdapter(
     fun updateList(newList: List<VisitWithClient>){
         Log.d("MyAdapter", "newList $newList")
         Log.d("MyAdapter", "oldList $orders")
-        val diffCallback = MyDiffCallback(newList = newList, oldList = orders)
+        val diffCallback = VisitDiffCallback(newList = newList, oldList = orders)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         orders = newList
         diffResult.dispatchUpdatesTo(this)

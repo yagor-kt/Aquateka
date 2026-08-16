@@ -3,19 +3,14 @@ package com.subefu.aquateka.view.fragment
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -36,7 +31,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.getValue
 
 @RequiresApi(Build.VERSION_CODES.O)
-class OrderInfoFragment : BottomSheetDialogFragment() {
+class VisitInfoFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentOrderInfoBinding? = null
     private val binding get() = _binding!!
@@ -118,7 +113,7 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
                     viewModel.deleteVisit(visit)
-                    this@OrderInfoFragment.dismiss()
+                    this@VisitInfoFragment.dismiss()
                 }
             builder.show()
         }
@@ -136,7 +131,7 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
                         putExtra(MyConst.VISIT_WITH_CLIENT, visitWithClient)
                     }
                     startActivity(intent)
-                    this@OrderInfoFragment.dismiss()
+                    this@VisitInfoFragment.dismiss()
                 }
             builder.show()
         }
@@ -151,8 +146,8 @@ class OrderInfoFragment : BottomSheetDialogFragment() {
     companion object {
         private const val ARG_VISIT_ITEM = "arg_visit_item"
 
-        fun newInstance(visit: VisitWithClient): OrderInfoFragment {
-            return OrderInfoFragment().apply {
+        fun newInstance(visit: VisitWithClient): VisitInfoFragment {
+            return VisitInfoFragment().apply {
                 arguments = bundleOf(
                     ARG_VISIT_ITEM to visit
                 )

@@ -33,29 +33,16 @@
                 android:layout_height="wrap_content"
                 style="@style/InfoText"
                 android:text="+7(983)432-43-23"/>
-
-            <TextView
-                android:id="@+id/tv_visit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/InfoText"
-                android:layout_marginTop="3dp"
-                android:text="След. визит: 13.04.27"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_marginEnd="10dp"
+            android:gravity="end">
 
-            <TextView
-                android:id="@+id/tv_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/InfoText"
-                android:layout_marginHorizontal="10dp"
-                tools:text="ул. Ленина 7"/>
 
             <TextView
                 android:id="@+id/tv_coordinate"
@@ -66,13 +53,14 @@
                 tools:text="42.533256/64.755389" />
 
             <TextView
-                android:id="@+id/tv_period"
+                android:id="@+id/tv_address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/InfoText"
-                android:layout_marginTop="3dp"
                 android:layout_marginHorizontal="10dp"
-                tools:text="Периодичность: 3 мес" />
+                tools:text="Адрес: ул. Ленина 7"/>
+
+
 
         </LinearLayout>
 

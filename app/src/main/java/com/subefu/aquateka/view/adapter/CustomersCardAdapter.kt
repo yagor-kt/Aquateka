@@ -1,16 +1,17 @@
 package com.subefu.aquateka.view.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.databinding.CardCustomerLayoutBinding
 import com.subefu.aquateka.model.domain.model.Client
-import com.subefu.aquateka.view.utils.MyDiffCallback
+import com.subefu.aquateka.view.utils.ClientDiffCallback
 
 class CustomersCardAdapter(
-    var customers: List<String>,
-    val onItemClick: (String) -> Unit,
+    var clients: List<Client>,
+    val onItemClick: (Client) -> Unit,
 ): RecyclerView.Adapter<CustomersCardAdapter.CustomersCardViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomersCardViewHolder {
@@ -21,36 +22,35 @@ class CustomersCardAdapter(
     }
 
     override fun onBindViewHolder(holder: CustomersCardViewHolder, position: Int) {
-        holder.bind(position)
+        holder.bind(clients[position])
     }
 
-    override fun getItemCount() = customers.size
+    override fun getItemCount() = clients.size
 
     fun updateList(newList: List<Client>){
-//        //todo(сделать другой diffUtill)
-//        val diffCallback = MyDiffCallback(newList, customers)
-//        val diffResult = DiffUtil.calculateDiff(diffCallback)
-//        customers = newList
-//        diffResult.dispatchUpdatesTo(this)
+        Log.d("MyAdapter", "newList $newList")
+        Log.d("MyAdapter", "oldList $clients")
+        val diffCallback = ClientDiffCallback(newList = newList, oldList = clients)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        clients = newList
+        diffResult.dispatchUpdatesTo(this)
     }
 
-    inner class CustomersCardViewHolder(val binding: CardCustomerLayoutBinding)
-        : RecyclerView.ViewHolder(binding.root){
-        fun bind(position: Int){
-            val item = customers[position]
+    inner class CustomersCardViewHolder(val binding: CardCustomerLayoutBinding) : RecyclerView.ViewHolder(binding.root){
+        init {
+            binding.root.setOnClickListener {
+                val actualPos = bindingAdapterPosition
+                if(actualPos != RecyclerView.NO_POSITION)
+                    onItemClick(clients[actualPos])
+            }
+        }
 
+        fun bind(client: Client){
             binding.apply {
-                //todo(заполнить карточку здесь)
-                tvName.text = item
-
-
-                root.setOnClickListener {
-                    val actualPos = super.getBindingAdapterPosition()
-                    if(actualPos != position)
-                        onItemClick(item)
-                    else
-                        onItemClick(item)
-                }
+                tvName.text = client.name
+                tvAddress.text = "Адрес: " + (client.address ?: "нет")
+                tvCoordinate.text = "${client.latitude}/${client.longitude}"
+                tvPhone.text = client.phone
             }
         }
 

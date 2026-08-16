@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/fragment_orders"
-        android:name="com.subefu.aquateka.view.fragment.OrdersFragment"
+        android:name="com.subefu.aquateka.view.fragment.VisitsFragment"
         android:label="@string/main"
         tools:layout="@layout/fragment_orders"/>
 
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/fragment_customers"
-        android:name="com.subefu.aquateka.view.fragment.CustomersFragment"
+        android:name="com.subefu.aquateka.view.fragment.ClientsFragment"
         android:label="@string/client"
         tools:layout="@layout/fragment_customers">
     </fragment>

@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +24,19 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         = MutableStateFlow<List<VisitWithClient>>(emptyList())
     val visits: StateFlow<List<VisitWithClient>> = _visits.asStateFlow()
 
+    private val _visitsOnMap
+        = MutableStateFlow<List<VisitWithClient>>(emptyList())
+    val visitsOnMap: StateFlow<List<VisitWithClient>> = _visitsOnMap.asStateFlow()
+
+    private val _clients
+        = MutableStateFlow<List<Client>>(emptyList())
+    val clients = _clients.asStateFlow()
+
     init {
         val currantDay = LocalDate.now()
         loadVisits(currantDay.monthValue, currantDay.year)
+        loadVisitsOnMap(currantDay.monthValue, currantDay.year)
+        loadClients()
     }
 
     fun loadVisits(month: Int, year: Int){
@@ -36,7 +47,33 @@ class MainViewModel(private val repository: Repository): ViewModel() {
                 }
             }catch (e: Exception){
                 _visits.value = emptyList()
-                Log.d("MyLog", "some bag @loadOrders {${e.message}}")
+                Log.d("MyLog", "some bag @loadVisits {${e.message}}")
+            }
+        }
+    }
+
+    fun loadClients(){
+        viewModelScope.launch {
+            try {
+                repository.getClients().collect{ clients ->
+                    _clients.value = clients
+                }
+            }catch (e: Exception){
+                _clients.value = emptyList()
+                Log.d("MyLog", "some bag @loadClients {${e.message}}")
+            }
+        }
+    }
+
+    fun loadVisitsOnMap(month: Int, year: Int){
+        viewModelScope.launch {
+            try {
+                repository.getVisitWithClientForMonth(month, year).collect{ visits ->
+                    _visitsOnMap.value = visits
+                }
+            }catch (e: Exception){
+                _visits.value = emptyList()
+                Log.d("MyLog", "some bag @loadVisitsOnMap {${e.message}}")
             }
         }
     }

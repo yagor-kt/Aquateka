@@ -1,6 +1,5 @@
 package com.subefu.aquateka.view.fragment
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
@@ -17,24 +16,27 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.subefu.aquateka.databinding.FragmentOrdersBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
+import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.CreateOrderActivity
 import com.subefu.aquateka.view.adapter.OrdersCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
-class OrdersFragment : Fragment() {
+class VisitsFragment : Fragment() {
     private var _binding: FragmentOrdersBinding? = null
     private val binding get() = _binding!!
     private val sharedViewModel: MainViewModel by activityViewModels {
@@ -63,6 +65,16 @@ class OrdersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupUI()
+
+        sharedViewModel.visits
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach { visits ->
+                rvAdapter.updateList(visits)
+                currentVisits = visits
+                updateShortInfo(visits)
+                Log.d("MyDB", visits.toString())
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
 
         binding.fabAddOrder.setOnClickListener {
             val intent = Intent(requireContext(), CreateOrderActivity::class.java)
@@ -110,7 +122,7 @@ class OrdersFragment : Fragment() {
         rvAdapter = OrdersCardAdapter(
             emptyList(),
             onItemClick = { item ->
-                val bottomSheet = OrderInfoFragment.newInstance(
+                val bottomSheet = VisitInfoFragment.newInstance(
                     visit = item,
                 )
                 bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
@@ -133,7 +145,6 @@ class OrdersFragment : Fragment() {
         )
 
         binding.rvOrders.apply{
-            itemAnimator = null
             adapter = rvAdapter
         }
 
@@ -152,8 +163,8 @@ class OrdersFragment : Fragment() {
 
     fun updateShortInfo(visits: List<VisitWithClient>){
         val all = visits.size
-        val completed = visits.filter { it.visit.status == "COMPLETED" }.size
-        val moved = visits.filter { it.visit.status == "POSTPONED" }.size
+        val completed = visits.filter { it.visit.status == MyConst.COMPLETED }.size
+        val moved = visits.filter { it.visit.status == MyConst.POSTPONED }.size
 
         binding.apply {
             tvAll.text = "Всего: $all"
@@ -186,23 +197,9 @@ class OrdersFragment : Fragment() {
         }
     }
 
-    @SuppressLint("RepeatOnLifecycleWrongUsage", "NewApi")
-    override fun onResume() {
-        super.onResume()
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED){
-                sharedViewModel.visits.collect{ visits ->
-                    rvAdapter.updateList(
-                        visits.map{
-                            it.copy(visit = it.visit.copy(), client = it.client.copy())
-                        }
-                    )
-                    currentVisits = visits
-                    updateShortInfo(visits)
-                    Log.d("MyDB", visits.toString())
-                }
-            }
-        }
+    override fun onStart() {
+        super.onStart()
+        updateMonthInfo(currantDay)
     }
 
     override fun onDestroyView() {

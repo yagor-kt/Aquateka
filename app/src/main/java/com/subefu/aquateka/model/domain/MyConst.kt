@@ -9,5 +9,7 @@ abstract class MyConst{
 
         val CUSTOMER = "CUSTOMER"
         val VISIT_WITH_CLIENT = "VISIT_WITH_CLIENT"
+        val CREATE = "CREATE"
+        val TYPE = "TYPE"
     }
 }
