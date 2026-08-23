@@ -23,8 +23,8 @@ data class VisitEntity(
     @ColumnInfo(index = true)
     val clientId: Int,
     val address: String?,
-    val latitude: Float,
-    val longitude: Float,
+    val latitude: Double,
+    val longitude: Double,
     val plannedMonth: Int,
     val plannedYear: Int,
     val actualDate: Int,

@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.subefu.aquateka.model.data.repository.AddressRepository
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.repository.Repository
@@ -55,6 +56,12 @@ class EditItemViewModel(private val repository: Repository): ViewModel() {
         viewModelScope.launch {
             try {
                 Log.d("MyVM", "визит добавляем")
+                var visit = visit
+                if (visit.address.isNullOrBlank()){
+                    val addressRepository = AddressRepository()
+                    val address = addressRepository.getAddressFromCoordinates(visit.latitude, visit.longitude)
+                    visit = visit.copy(address = address)
+                }
                 repository.insertVisit(visit)
                 Log.d("MyVM", "визит добавился успешно")
             }catch (e: Exception){

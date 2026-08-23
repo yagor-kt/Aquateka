@@ -9,10 +9,10 @@ import com.subefu.aquateka.databinding.CardCustomerLayoutBinding
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.view.utils.ClientDiffCallback
 
-class CustomersCardAdapter(
+class ClientCardAdapter(
     var clients: List<Client>,
     val onItemClick: (Client) -> Unit,
-): RecyclerView.Adapter<CustomersCardAdapter.CustomersCardViewHolder>() {
+): RecyclerView.Adapter<ClientCardAdapter.CustomersCardViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomersCardViewHolder {
         val binding = CardCustomerLayoutBinding.inflate(
@@ -48,7 +48,7 @@ class CustomersCardAdapter(
         fun bind(client: Client){
             binding.apply {
                 tvName.text = client.name
-                tvAddress.text = "Адрес: " + (client.address ?: "нет")
+                tvAddress.text = client.address ?: "адрес не указан"
                 tvCoordinate.text = "${client.latitude}/${client.longitude}"
                 tvPhone.text = client.phone
             }

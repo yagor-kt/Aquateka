@@ -12,12 +12,12 @@ import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.utils.VisitDiffCallback
 
-class OrdersCardAdapter(
+class VisitCardAdapter(
     var orders: List<VisitWithClient>,
     val onItemClick: (VisitWithClient) -> Unit,
     val onLongItemClick: (VisitWithClient) -> Unit,
 ):
-    RecyclerView.Adapter<OrdersCardAdapter.OrdersCardViewHolder>(){
+    RecyclerView.Adapter<VisitCardAdapter.OrdersCardViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrdersCardViewHolder {
         val binding = CardOrderLayoutBinding.inflate(
@@ -64,7 +64,15 @@ class OrdersCardAdapter(
                 tvDate.text = if(item.visit.actual_date == 0) "---" else item.visit.actual_date.toString()
                 tvPhone.text = item.client.phone
                 tvPrice.text = "${item.visit.price}₽"
-                tvStatus.text = item.visit.status
+                tvStatus.text = when(item.visit.status){
+                    MyConst.COMPLETED -> MyConst.SHORT_COMPLETED
+                    MyConst.POSTPONED -> MyConst.SHORT_POSTPONED
+                    MyConst.PLANNED -> MyConst.SHORT_PLANNED
+                    MyConst.COMPLETED -> MyConst.SHORT_COMPLETED
+                    else -> ""
+                }
+
+                tvCoordinate.text = "${item.visit.latitude}/${item.visit.longitude}"
 
                 ivStatusColor.imageTintList = when(item.visit.status){
                     MyConst.COMPLETED -> ContextCompat.getColorStateList(binding.root.context, R.color.green)

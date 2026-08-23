@@ -6,7 +6,6 @@ import com.subefu.aquateka.model.data.entity.VisitWithClientEntity
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
-import kotlin.String
 
 fun VisitWithClientEntity.toModel() = VisitWithClient(
     this.visit.toModel(),
@@ -63,7 +62,7 @@ fun Visit.toEntity()
 
 fun Client.toEntity()
     = ClientEntity(
-    if(this.cllietn_id == 0) null else this.cllietn_id,
+    if(this.clietn_id == 0) null else this.clietn_id,
     this.name,
     this.phone,
     this.address,

@@ -1,5 +1,7 @@
 package com.subefu.aquateka.view.fragment
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -8,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.view.size
@@ -21,10 +24,9 @@ import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
-import com.subefu.aquateka.model.domain.model.VisitWithClient
-import com.subefu.aquateka.view.activity.CreateCustomerActivity
+import com.subefu.aquateka.view.activity.CreateClientActivity
 import com.subefu.aquateka.view.activity.ProfileCustomerActivity
-import com.subefu.aquateka.view.adapter.CustomersCardAdapter
+import com.subefu.aquateka.view.adapter.ClientCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.flow.launchIn
@@ -42,7 +44,7 @@ class ClientsFragment : Fragment() {
         MainViewModelFactory(repository)
     }
 
-    private lateinit var rvAdapter: CustomersCardAdapter
+    private lateinit var rvAdapter: ClientCardAdapter
     var clients = listOf<Client>()
 
     override fun onCreateView(
@@ -54,8 +56,19 @@ class ClientsFragment : Fragment() {
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //сброс фокуса строки поиска
+        binding.main.setOnTouchListener { _, _ ->
+            if (binding.etSearch.hasFocus()) {
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+                binding.main.requestFocus()
+            }
+            false
+        }
 
         sharedViewModel.clients
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
@@ -67,7 +80,7 @@ class ClientsFragment : Fragment() {
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        rvAdapter = CustomersCardAdapter(
+        rvAdapter = ClientCardAdapter(
             clients = clients,
             onItemClick = { item ->
                 val intent = Intent(requireContext(), ProfileCustomerActivity::class.java)
@@ -81,15 +94,19 @@ class ClientsFragment : Fragment() {
         }
 
         binding.fabAddCustomer.setOnClickListener {
-            val intent = Intent(requireContext(), CreateCustomerActivity::class.java)
+            val intent = Intent(requireContext(), CreateClientActivity::class.java)
             intent.putExtra(MyConst.TYPE, MyConst.CREATE)
             startActivity(intent)
         }
 
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
-            //todo(сделать фильтрацию по нескольким полям)
-//            val newList = list.filter { it.contains(text.toString()) }
-            //rvAdapter.updateList(newList)
+            val searchText = text.toString().trim()
+            val newList = clients.filter {
+                it.name.contains(searchText, true) ||
+                it.phone.contains(searchText, true)
+            }
+            rvAdapter.updateList(newList)
+            updateShortInfo(newList)
         }
 
         binding.imExport.setOnClickListener {
@@ -114,4 +131,6 @@ class ClientsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+
 }

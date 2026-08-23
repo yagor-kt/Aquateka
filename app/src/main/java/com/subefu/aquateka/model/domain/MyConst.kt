@@ -7,6 +7,11 @@ abstract class MyConst{
         val COMPLETED = "Завершен"
         val CANCELLED = "Отменен"
 
+        val SHORT_PLANNED = "План"
+        val SHORT_POSTPONED = "Перен."
+        val SHORT_COMPLETED = "Завер."
+        val SHORT_CANCELLED = "Отмен."
+
         val CUSTOMER = "CUSTOMER"
         val VISIT_WITH_CLIENT = "VISIT_WITH_CLIENT"
         val CREATE = "CREATE"

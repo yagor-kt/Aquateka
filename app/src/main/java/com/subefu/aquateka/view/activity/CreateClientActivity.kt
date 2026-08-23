@@ -6,12 +6,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.ActivityCreateCustomerBinding
-import com.subefu.aquateka.databinding.ActivityCreateOrderBinding
 
-class CreateCustomerActivity : AppCompatActivity() {
+class CreateClientActivity : AppCompatActivity() {
 
     private var _binding: ActivityCreateCustomerBinding? = null
     private val binding get() = _binding!!
