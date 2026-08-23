@@ -1,7 +1,11 @@
 package com.subefu.aquateka.view.fragment
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
+import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -9,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -23,8 +28,8 @@ import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
-import com.subefu.aquateka.view.activity.CreateOrderActivity
-import com.subefu.aquateka.view.adapter.OrdersCardAdapter
+import com.subefu.aquateka.view.activity.CreateVisitActivity
+import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +50,7 @@ class VisitsFragment : Fragment() {
         MainViewModelFactory(repository)
     }
 
-    private lateinit var rvAdapter: OrdersCardAdapter
+    private lateinit var rvAdapter: VisitCardAdapter
     var currantDay = LocalDate.now()
     var currentVisits = listOf<VisitWithClient>()
     private var csvTextToWrite = ""
@@ -61,8 +66,19 @@ class VisitsFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //сброс фокуса строки поиска
+        binding.main.setOnTouchListener { _, _ ->
+            if (binding.etSearch.hasFocus()) {
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+                binding.main.requestFocus()
+            }
+            false
+        }
 
         setupUI()
 
@@ -77,20 +93,18 @@ class VisitsFragment : Fragment() {
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         binding.fabAddOrder.setOnClickListener {
-            val intent = Intent(requireContext(), CreateOrderActivity::class.java)
+            val intent = Intent(requireContext(), CreateVisitActivity::class.java)
             intent.putExtra("type", "create")
             startActivity(intent)
         }
 
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
-            val nameList = currentVisits.filter {
-                it.client.name.lowercase().contains(text.toString().lowercase().trim())
-            }.toSet()
-            val phoneList = currentVisits.filter {
-                it.client.phone.lowercase().contains(text.toString().lowercase().trim())
-            }.toSet()
-
-            val newList = nameList.union(phoneList).toList()
+            val searchText = text.toString().lowercase().trim()
+            val newList = currentVisits.filter {
+                it.client.name.contains(searchText, true) ||
+                it.client.phone.contains(searchText, true) ||
+                ("${it.client.latitude} ${it.client.longitude}").contains(searchText, true)
+            }
             rvAdapter.updateList(newList)
             updateShortInfo(newList)
         }
@@ -115,11 +129,25 @@ class VisitsFragment : Fragment() {
             currantDay = currantDay.minusMonths(1)
             updateMonthInfo(currantDay)
         }
+
+        binding.dateContainer.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+                Log.d("MyVisits", "$selectedYear,$selectedMonth,$selectedDay")
+                sharedViewModel.loadVisits(selectedMonth+1, selectedYear)
+                currantDay = LocalDate.of(selectedYear, selectedMonth+1, selectedDay)
+                updateMonthInfo(currantDay)
+            }, year, month, day).show()
+        }
     }
 
 
     fun setupUI(){
-        rvAdapter = OrdersCardAdapter(
+        rvAdapter = VisitCardAdapter(
             emptyList(),
             onItemClick = { item ->
                 val bottomSheet = VisitInfoFragment.newInstance(

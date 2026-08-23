@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.view.setPadding
+import androidx.core.view.children
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -25,7 +25,7 @@ import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.VisitWithClient
-import com.subefu.aquateka.view.adapter.OrdersCardAdapter
+import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import com.yandex.mapkit.Animation
@@ -33,15 +33,11 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.geometry.BoundingBox
-import com.yandex.mapkit.geometry.BoundingBoxHelper
-import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.mapview.MapView
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.text.DateFormat
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.getValue
@@ -54,10 +50,12 @@ class MapFragment : Fragment() {
 
     private lateinit var mapView: MapView
 
-    private lateinit var rvAdapter: OrdersCardAdapter
+    private lateinit var rvAdapter: VisitCardAdapter
     var currantDay = LocalDate.now()
     var currentVisits = listOf<VisitWithClient>()
     var currentClients = listOf<Client>()
+
+    var isViewMonthSelection = false
 
     private val sharedViewModel: MainViewModel by activityViewModels {
         val dataBase = DataBase.getDB(requireContext().applicationContext)
@@ -108,7 +106,7 @@ class MapFragment : Fragment() {
     }
 
     fun setupRecyclerView(){
-        rvAdapter = OrdersCardAdapter(
+        rvAdapter = VisitCardAdapter(
             emptyList(),
             onItemClick = { item ->
                 val bottomSheet = VisitInfoFragment.newInstance(
@@ -139,12 +137,12 @@ class MapFragment : Fragment() {
     }
 
     fun setupChips(){
-
         binding.chipGroupMap.setOnCheckedStateChangeListener { group, checkedIds ->
             var points: List<Point> = emptyList()
 
             when(checkedIds.firstOrNull()){
                 binding.chipAllClient.id -> {
+                    isViewMonthSelection = false
                      points = currentClients.map {
                         Point(it.latitude.toDouble(), it.longitude.toDouble())
                      }
@@ -153,6 +151,7 @@ class MapFragment : Fragment() {
                     rvAdapter.updateList(emptyList())
                 }
                 binding.chipCurrentMonth.id -> {
+                    isViewMonthSelection = false
                     sharedViewModel.loadVisitsOnMap(currantDay.monthValue, currantDay.year)
                     updateVisits()
                 }
@@ -165,10 +164,27 @@ class MapFragment : Fragment() {
                     DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
                         Log.d("MyMap", "$selectedYear,$selectedMonth,$selectedDay")
                         sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
-                        binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth, 1).month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+                        binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1).month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+                        isViewMonthSelection = true
                     }, year, month, day).show()
                     updateVisits()
                 }
+            }
+        }
+
+        binding.chipMonth.setOnClickListener { view ->
+            if (isViewMonthSelection){
+                val calendar = Calendar.getInstance()
+                val year = calendar.get(Calendar.YEAR)
+                val month = calendar.get(Calendar.MONTH)
+                val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+                    Log.d("MyMap", "$selectedYear,$selectedMonth,$selectedDay")
+                    sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
+                    binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1).month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+                }, year, month, day).show()
+                updateVisits()
             }
         }
     }
@@ -212,7 +228,7 @@ class MapFragment : Fragment() {
                 Toast.makeText(requireContext(), mapObject.userData.toString(), Toast.LENGTH_LONG).show()
                 true
             }
-            getBoundingBoxForPosition(points)?.let { boundingBox ->
+            getBoundingBoxForPosition(points).let { boundingBox ->
                 if(mapView.height != 0){
                     val topLeft = ScreenPoint(70f, 70f)
                     val width = binding.mapView.width.toFloat()
@@ -223,13 +239,13 @@ class MapFragment : Fragment() {
                     mapWindow.focusRect = screenRect
                 }
                 val cameraPosition = map.cameraPosition(boundingBox, 0f, 0f, null)
-                map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1f), null)
+                map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.5f), null)
             }
         }
     }
 
-    fun getBoundingBoxForPosition(points: List<Point>): BoundingBox?{
-        if(points.isEmpty()) return null
+    fun getBoundingBoxForPosition(points: List<Point>): BoundingBox{
+        if(points.isEmpty()) return BoundingBox(Point(54.710162, 20.510137), Point(43.983211, 132.919176))
 
         var maxLat = points[0].latitude
         var minLat = points[0].latitude
@@ -247,6 +263,13 @@ class MapFragment : Fragment() {
         val northEast = Point(maxLat, maxLon)
 
         return BoundingBox(southWest, northEast)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.chipGroupMap.children
+            .find { it.id == binding.chipCurrentMonth.id }
+            ?.isSelected = true
     }
 
     override fun onStart() {

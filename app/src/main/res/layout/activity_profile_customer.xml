@@ -26,69 +26,36 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
+        app:singleSelection="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
+            android:id="@+id/bt_delete"
             style="@style/Button.IconOnly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_delete" />
 
         <Button
+            android:id="@+id/bt_edit"
             style="@style/Button.IconOnly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_edit" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-    <LinearLayout
-        android:id="@+id/ll_customer_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_month">
 
         <TextView
+            android:id="@+id/userInfo"
             style="@style/InfoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ФИО: " />
-
-        <TextView
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Телефон: " />
-
-        <TextView
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Адрес: " />
-
-        <TextView
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Координаты: " />
-
-        <TextView
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Периодичность: " />
-
-        <TextView
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Следующий визит: " />
-    </LinearLayout>
+            android:text="Следующий визит: "
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_month"/>
 
 
     <com.google.android.material.divider.MaterialDivider
@@ -98,7 +65,7 @@
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ll_customer_info" />
+        app:layout_constraintTop_toBottomOf="@+id/userInfo" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_customers"
@@ -106,6 +73,7 @@
         android:layout_height="0dp"
         android:paddingHorizontal="12dp"
         android:paddingTop="15dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

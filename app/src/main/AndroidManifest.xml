@@ -14,13 +14,13 @@
         android:theme="@style/Theme.Aquateka"
         tools:targetApi="31">
         <activity
-            android:name=".view.activity.CreateOrderActivity"
+            android:name=".view.activity.CreateVisitActivity"
             android:exported="false" />
         <activity
             android:name=".view.activity.ProfileCustomerActivity"
             android:exported="false" />
         <activity
-            android:name=".view.activity.CreateCustomerActivity"
+            android:name=".view.activity.CreateClientActivity"
             android:exported="false" />
         <activity
             android:name=".view.CustomersActivity"

@@ -12,7 +12,7 @@ class ClientDiffCallback(
     override fun getNewListSize() = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition].cllietn_id == newList[newItemPosition].cllietn_id
+        return oldList[oldItemPosition].clietn_id == newList[newItemPosition].clietn_id
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

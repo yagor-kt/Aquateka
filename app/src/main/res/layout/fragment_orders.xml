@@ -11,78 +11,87 @@
 
     <ImageButton
         android:id="@+id/im_month_previous"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="15dp"
-        android:padding="5dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:layout_marginStart="10dp"
         android:background="@android:color/transparent"
+        android:padding="13dp"
+        app:layout_constraintBottom_toBottomOf="@+id/date_container"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/date_container"
         app:srcCompat="@drawable/ic_move"
         tools:ignore="TouchTargetSizeCheck" />
 
-    <TextView
-        android:id="@+id/tv_month"
+    <LinearLayout
+        android:id="@+id/date_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_bold"
-        tools:text="@string/month"
-        android:textColor="@color/text"
-        android:textSize="20sp"
-        android:paddingHorizontal="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintStart_toEndOf="@+id/im_month_previous"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_month"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_bold"
+            android:gravity="center"
+            android:textColor="@color/text"
+            android:textSize="20sp"
+            tools:text="МАЯ" />
+
+        <TextView
+            android:id="@+id/tv_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_bold"
+            android:textColor="@color/text"
+            android:textSize="20sp"
+            android:layout_marginTop="-5dp"
+            tools:text="2026" />
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/im_month_next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="10dp"
-        android:rotation="180"
-        android:padding="5dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
-        app:layout_constraintStart_toEndOf="@+id/tv_month"
-        app:layout_constraintTop_toTopOf="parent"
+        android:padding="13dp"
+        android:rotation="180"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@+id/date_container"
+        app:layout_constraintStart_toEndOf="@+id/date_container"
+        app:layout_constraintTop_toTopOf="@+id/date_container"
         app:srcCompat="@drawable/ic_move" />
 
-    <TextView
-        android:id="@+id/tv_year"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_bold"
-        android:paddingHorizontal="10dp"
-        tools:text="@string/month"
-        android:textColor="@color/text"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="@+id/im_month_next"
-        app:layout_constraintEnd_toStartOf="@+id/im_import"
-        app:layout_constraintStart_toEndOf="@+id/im_month_next"
-        app:layout_constraintTop_toTopOf="@+id/im_month_next" />
 
     <ImageButton
         android:id="@+id/im_export"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="10dp"
         android:background="@android:color/transparent"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/im_import"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/im_import"
         app:srcCompat="@drawable/ic_export" />
 
     <ImageButton
         android:id="@+id/im_import"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="10dp"
         android:background="@android:color/transparent"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/im_month_next"
         app:layout_constraintEnd_toStartOf="@id/im_export"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/im_month_next"
         app:srcCompat="@drawable/ic_import" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -94,7 +103,7 @@
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_month">
+        app:layout_constraintTop_toBottomOf="@+id/date_container">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_search"
@@ -162,13 +171,14 @@
         android:id="@+id/rv_orders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingHorizontal="12dp"
         android:paddingTop="15dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/card_order_layout"
-        android:paddingHorizontal="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:listitem="@layout/card_order_layout" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_order"

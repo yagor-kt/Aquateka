@@ -43,7 +43,9 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         viewModelScope.launch {
             try {
                 repository.getVisitWithClientForMonth(month, year).collect{ visits ->
-                    _visits.value = visits
+                    _visits.value = visits.sortedBy {
+                        it.visit.status
+                    }
                 }
             }catch (e: Exception){
                 _visits.value = emptyList()

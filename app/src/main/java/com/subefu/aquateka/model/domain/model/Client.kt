@@ -5,12 +5,12 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Client(
-    val cllietn_id: Int,
+    val clietn_id: Int,
     val name: String,
     val phone: String,
     val address: String?,
-    val latitude: Float,
-    val longitude: Float,
+    val latitude: Double,
+    val longitude: Double,
     val period_month: Int?,
     val comment: String
 ): Parcelable

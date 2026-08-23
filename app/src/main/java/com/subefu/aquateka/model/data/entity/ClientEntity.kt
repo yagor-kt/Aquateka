@@ -10,8 +10,8 @@ data class ClientEntity(
     val name: String,
     val phone: String,
     val address: String?,
-    val latitude: Float,
-    val longitude: Float,
+    val latitude: Double,
+    val longitude: Double,
     val periodMonth: Int?,
     val comment: String
 )

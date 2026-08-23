@@ -1,23 +1,17 @@
 package com.subefu.aquateka.view.activity
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.ActivityCreateOrderBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
@@ -28,13 +22,11 @@ import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
 import kotlin.getValue
 
-class CreateOrderActivity : AppCompatActivity() {
+class CreateVisitActivity : AppCompatActivity() {
 
     private var _binding: ActivityCreateOrderBinding? = null
     private val binding get() = _binding!!
@@ -59,6 +51,7 @@ class CreateOrderActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
     }
 
     override fun onStart() {
@@ -110,25 +103,24 @@ class CreateOrderActivity : AppCompatActivity() {
 
                     val visit = Visit(
                         id = currentVisit?.id ?: 0,
-                        clientId = currentClient?.cllietn_id ?: throw NullPointerException("Введите клиента"),
+                        clientId = currentClient?.clietn_id ?: throw NullPointerException("Введите клиента"),
                         address = binding.tfAddress.editText?.text.toString(),
-                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toFloat(),
-                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toFloat(),
+                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDouble(),
+                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDouble(),
                         planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toInt(),
                         planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toInt(),
                         actual_date = currentVisit?.actual_date ?: 0,
                         status = currentVisit?.status ?: MyConst.PLANNED,
                         work_type = binding.tfWorkType.editText?.text.toString(),
-                        price = binding.tfPrice.editText?.text.toString().toInt(),
+                        price = binding.tfPrice.editText?.text.toString().toIntOrNull() ?: 0,
                         parts = binding.tfDetails.editText?.text.toString(),
                         comment = binding.tfComment.editText?.text.toString(),
-                        period = binding.tfPeriod.editText?.text.toString().toInt(),
+                        period = binding.tfPeriod.editText?.text.toString().toIntOrNull() ?: 0,
                     )
 
                     if(currentVisit != null)
                         viewModel.updateVisit(visit)
                     else
-                        //TODO(баг не изменения данных(координаты), если на месяц 2 визита одному клиенту)
                         viewModel.insertVisit(visit)
                     this.finish()
                 }
@@ -174,7 +166,7 @@ class CreateOrderActivity : AppCompatActivity() {
                     clientList.clear()
                     clientList.addAll(clients)
 
-                    val selectClient = clients.find { it.cllietn_id == currentClient?.cllietn_id }
+                    val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
                     selectClient?.let { client ->
                         val autoCompleteTextView = binding.tvName
                         autoCompleteTextView.setText(client.name, false)
