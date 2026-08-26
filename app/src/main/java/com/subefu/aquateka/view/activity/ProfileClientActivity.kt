@@ -1,8 +1,6 @@
 package com.subefu.aquateka.view.activity
 
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -33,21 +31,18 @@ class ProfileClientActivity : AppCompatActivity() {
         EditItemViewModelFactory(repository)
     }
 
-    lateinit var currentClient: Client
+    private lateinit var currentClient: Client
 
-    private val startChildActivityLauncher = registerForActivityResult (
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
+    private val startChildActivityLauncher
+    = registerForActivityResult (ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            val data: Intent? = result.data
-            val returnedValue = data?.getParcelableExtra<Client>(MyConst.CLIENT)
+            val returnedValue = result.data?.getParcelableExtra<Client>(MyConst.CLIENT, Client::class.java)
             returnedValue?.let {
                 currentClient = it
                 loadUserInfo()
             }
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,57 +55,63 @@ class ProfileClientActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
         currentClient = intent.getParcelableExtra(MyConst.CLIENT, Client::class.java)
             ?: throw NullPointerException("client is null, intent was incorrect")
 
         loadUserInfo()
-        setClickListeners()
+
+        binding.btDelete.setOnClickListener {
+            val builder = getDeleteClientDialog()
+            builder.show()
+
+            binding.btEdit.setOnClickListener {
+                val builder = getEditClientDialog()
+                builder.show()
+            }
+        }
     }
 
     fun loadUserInfo(){
-        val userInfo = StringBuilder().apply {
-            append("ФИО: ${currentClient.name}\n")
-            append("Телефон: ${currentClient.phone}\n")
-            append("Адрес: ${currentClient.address ?: "не указан"}\n")
-            append("Координаты: ${currentClient.latitude}/${currentClient.longitude}\n")
-            append("Коментарий: ${currentClient.comment}\n")
-            append("Периодичность: ${currentClient.period_month ?: "не указана"}")
-        }
+        val userInfo = """
+            |ФИО: ${currentClient.name}
+            |Телефон: ${currentClient.phone}
+            |Адрес: ${currentClient.address ?: "не указан"}
+            |Координаты: ${currentClient.latitude} / ${currentClient.longitude}
+            |Коментарий: ${currentClient.comment}
+            |Периодичность: ${currentClient.period_month ?: "не указана"}
+        """.trimMargin()
         binding.userInfo.text = userInfo.toString()
     }
 
-    fun setClickListeners(){
-        binding.btDelete.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder
-                .setTitle("Удалить клиента \"${currentClient.name}?\"")
-                .setMessage("Это действие невозможно отменить, также будут удалены все визиты этого клиента!")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-                    viewModel.deleteClient(currentClient)
-                    this.finish()
-                }
-            builder.show()
-        }
+    fun getDeleteClientDialog(): AlertDialog.Builder{
+        return AlertDialog.Builder(this)
+            .setTitle("Удалить клиента \"${currentClient.name}?\"")
+            .setMessage("Это действие невозможно отменить, также будут удалены все визиты этого клиента!")
+            .setNegativeButton("НЕТ") { dialog, witch ->
+                dialog.cancel()
+            }
+            .setPositiveButton("ДА") { dialog, witch ->
+                viewModel.deleteClient(currentClient)
+                dialog.cancel()
+                this.finish()
+            }
+    }
 
-        binding.btEdit.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Изменить клиента \"${currentClient.name}?\"")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-                    val intent = Intent(this, CreateClientActivity::class.java).apply {
-                        putExtra(MyConst.CLIENT, currentClient)
-                    }
-                    startChildActivityLauncher.launch(intent)
-                }
-            builder.show()
-        }
+    fun getEditClientDialog(): AlertDialog.Builder{
+        return AlertDialog.Builder(this)
+            .setTitle("Изменить клиента \"${currentClient.name}?\"")
+            .setNegativeButton("НЕТ") { dialog, witch ->
+                dialog.cancel()
+            }
+            .setPositiveButton("ДА") { dialog, witch ->
+                dialog.cancel()
+                val intent = Intent(this, CreateClientActivity::class.java)
+                intent.putExtra(MyConst.CLIENT, currentClient)
+                startChildActivityLauncher.launch(intent)
+            }
     }
 }

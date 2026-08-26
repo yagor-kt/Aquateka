@@ -59,18 +59,18 @@ class CreateVisitActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val type = intent.getStringExtra(MyConst.TYPE)
 
+        val type = intent.getStringExtra(MyConst.TYPE)
         if(type == MyConst.CREATE)
             binding.tvTitle.text = "Создание заказа"
         else {
-            setupEditData()
             binding.tvTitle.text = "Редактирвоание заказа"
+            setupEditData()
         }
 
         binding.tfName.editText?.doAfterTextChanged { view ->
             currentClient = clientList.find { it.name == binding.tfName.editText?.text.toString()}
-            Log.d("MyCOA", currentClient?.name.toString())
+//            Log.d("MyCOA", currentClient?.name.toString())
             currentClient?.let {
                 binding.apply {
                     tfAddress.editText?.setText(it.address ?: "")
@@ -81,57 +81,14 @@ class CreateVisitActivity : AppCompatActivity() {
         }
 
         binding.btCancelled.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Отменить ${binding.tvTitle.text}?")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-                    this.finish()
-                }
+            val builder = getCancelledVisitDialog()
             builder.show()
         }
 
         binding.btPreserve.setOnClickListener {
             if(isNotFillData() || isNotValidateData()) return@setOnClickListener
 
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Сохранить заказ?")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-
-                    val visit = Visit(
-                        id = currentVisit?.id ?: 0,
-                        clientId = currentClient?.clietn_id ?: throw NullPointerException("Введите клиента"),
-                        address = binding.tfAddress.editText?.text.toString(),
-                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDoubleOrNull() ?: 0.0,
-                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDoubleOrNull() ?: 0.0,
-                        planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toIntOrNull() ?: 0,
-                        planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toIntOrNull() ?: 0,
-                        actual_date = currentVisit?.actual_date ?: 0,
-                        status = currentVisit?.status ?: MyConst.PLANNED,
-                        work_type = binding.tfWorkType.editText?.text.toString(),
-                        price = binding.tfPrice.editText?.text.toString().toIntOrNull() ?: 0,
-                        parts = binding.tfDetails.editText?.text.toString(),
-                        comment = binding.tfComment.editText?.text.toString(),
-                        period = binding.tfPeriod.editText?.text.toString().toIntOrNull() ?: 0,
-                    )
-
-                    if(currentVisit != null)
-                        if (visit.address.isNullOrBlank())
-                            viewModel.updateVisit(visit, true)
-                        else if(visit.address == "-")
-                            viewModel.updateVisit(visit.copy(address = ""))
-                        else
-                            viewModel.updateVisit(visit)
-                    else
-                        viewModel.insertVisit(visit)
-                    this.finish()
-                }
+            val builder = getPreserveVisitDialog()
             builder.show()
         }
     }
@@ -150,6 +107,10 @@ class CreateVisitActivity : AppCompatActivity() {
         currentVisit = visit
         currentClient = visitWithClient.client
 
+        fillUiVisitData(visit)
+    }
+
+    fun fillUiVisitData(visit: Visit){
         binding.apply {
             tfAddress.editText?.setText(visit.address)
             tfCoordinate.editText?.setText("${visit.latitude},${visit.longitude}")
@@ -162,26 +123,59 @@ class CreateVisitActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            viewModel.clients.collect { clients ->
-                val customers = clients.map { it.name }.toTypedArray()
-                withContext(Dispatchers.Main) {
-                    (binding.tfName.editText as MaterialAutoCompleteTextView).setSimpleItems(
-                        customers
-                    )
-                    clientList.clear()
-                    clientList.addAll(clients)
-
-                    val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
-                    selectClient?.let { client ->
-                        val autoCompleteTextView = binding.tvName
-                        autoCompleteTextView.setText(client.name, false)
-                    }
-                }
+    fun getCancelledVisitDialog(): AlertDialog.Builder{
+        return AlertDialog.Builder(this)
+            .setTitle("Отменить ${binding.tvTitle.text}?")
+            .setNegativeButton("НЕТ"){dialog, witch ->
+                dialog.cancel()
             }
-        }
+            .setPositiveButton("ДА"){dialog, witch ->
+                dialog.cancel()
+                this.finish()
+            }
+    }
+
+    fun getPreserveVisitDialog(): AlertDialog.Builder{
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Сохранить заказ \"${currentClient?.name}\"?")
+            .setNegativeButton("НЕТ"){dialog, witch -> dialog.cancel() }
+            .setPositiveButton("ДА"){dialog, witch ->
+                dialog.cancel()
+
+                val visit = getVisitFromUI()
+
+                if(currentVisit != null) {
+                    if (visit.address.isNullOrBlank())
+                        viewModel.updateVisit(visit, true)
+                    else if (visit.address == "-")
+                        viewModel.updateVisit(visit.copy(address = ""))
+                    else
+                        viewModel.updateVisit(visit)
+                }
+                else
+                    viewModel.insertVisit(visit)
+                this.finish()
+            }
+        return builder
+    }
+
+    fun getVisitFromUI(): Visit{
+        return Visit(
+            id = currentVisit?.id ?: 0,
+            clientId = currentClient?.clietn_id ?: throw NullPointerException("Введите клиента"),
+            address = binding.tfAddress.editText?.text.toString(),
+            latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDoubleOrNull() ?: 0.0,
+            longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDoubleOrNull() ?: 0.0,
+            planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toIntOrNull() ?: 0,
+            planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toIntOrNull() ?: 0,
+            actual_date = currentVisit?.actual_date ?: 0,
+            status = currentVisit?.status ?: MyConst.PLANNED,
+            work_type = binding.tfWorkType.editText?.text.toString(),
+            price = binding.tfPrice.editText?.text.toString().toIntOrNull() ?: 0,
+            parts = binding.tfDetails.editText?.text.toString(),
+            comment = binding.tfComment.editText?.text.toString(),
+            period = binding.tfPeriod.editText?.text.toString().toIntOrNull() ?: 0,
+        )
     }
 
     fun isNotFillData(): Boolean{
@@ -222,7 +216,6 @@ class CreateVisitActivity : AppCompatActivity() {
         if (textInputLayout.editText?.text.isNullOrBlank()) {
             textInputLayout.error = errorText
             textInputLayout.isErrorEnabled = true
-            Log.d("My.CreateVisit", "mandatory error: ${textInputLayout.editText?.text}")
             return false
         } else{
             textInputLayout.error = null
@@ -231,6 +224,7 @@ class CreateVisitActivity : AppCompatActivity() {
         return true
     }
 
+    //проверяем не дропнет ли ошибку при валидации, обрабатываем ее
     fun checkValidateField(errorMessage: String, action: () -> Unit): Boolean{
         try {
             action()
@@ -239,6 +233,28 @@ class CreateVisitActivity : AppCompatActivity() {
             Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             Log.d("My.CreateVisit", "validate error: ${e.message}")
             return false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            viewModel.clients.collect { clients ->
+                val customers = clients.map { it.name }.toTypedArray()
+                withContext(Dispatchers.Main) {
+                    (binding.tfName.editText as MaterialAutoCompleteTextView).setSimpleItems(
+                        customers
+                    )
+                    clientList.clear()
+                    clientList.addAll(clients)
+
+                    val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
+                    selectClient?.let { client ->
+                        val autoCompleteTextView = binding.tvName
+                        autoCompleteTextView.setText(client.name, false)
+                    }
+                }
+            }
         }
     }
 
