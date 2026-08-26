@@ -11,6 +11,7 @@ import com.subefu.aquateka.model.data.repository.AddressRepository
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.repository.Repository
+import com.subefu.aquateka.model.domain.usecase.SetAddressClientUseCase
 import com.subefu.aquateka.model.domain.usecase.SetAddressVisitUseCase
 import com.subefu.aquateka.model.domain.utill.Result
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,13 +23,11 @@ import kotlinx.coroutines.launch
 
 class EditItemViewModel(
     private val repository: Repository,
-    private val setAddressVisitUseCase: SetAddressVisitUseCase? = null
+    private val setAddressVisitUseCase: SetAddressVisitUseCase? = null,
+    private val setAddressClientUseCase: SetAddressClientUseCase? = null,
 ): ViewModel() {
     private var _clients = MutableStateFlow<List<Client>>(emptyList())
     val clients = _clients.asStateFlow()
-
-    private var _events = MutableSharedFlow<Result<Visit>>()
-    val events = _events.asSharedFlow()
 
     private var addressRepository: AddressRepository? = null
 
@@ -36,18 +35,19 @@ class EditItemViewModel(
         loadClients()
         addressRepository = AddressRepository()
         setAddressVisitUseCase?.let { it.setAddressRepository(addressRepository!!) }
+        setAddressClientUseCase?.let { it.setAddressRepository(addressRepository!!) }
     }
 
     fun loadClients(){
         viewModelScope.launch {
             try {
-                Log.d("MyVM", "клиенты загружены #EditItemViewModel #loadClients")
+                Log.d("MyVmEdit", "клиенты загружены  #loadClients")
                 repository.getClients().collect { clients ->
                     _clients.value = clients
                 }
             }catch (e: Exception){
                 _clients.value = emptyList()
-                Log.d("MyVM", "some bag #EditItemViewModel #loadClients {${e.message}}")
+                Log.d("MyVmEdit", "some bag  #loadClients {${e.message}}")
             }
         }
     }
@@ -55,15 +55,15 @@ class EditItemViewModel(
     fun insertVisit(visit: Visit){
         viewModelScope.launch {
             try {
-                Log.d("MyVM", "создаем визит...")
+                Log.d("MyVmEdit", "создаем визит(${visit.hashCode()})...")
                 repository.insertVisit(visit)
-                Log.d("MyVM", "...визит создан успешно")
+                Log.d("MyVmEdit", "...визит создан(${visit.hashCode()}) успешно")
 
-                if (visit.address == ""){
+                if (visit.address.isNullOrBlank()){
                     setAddressVisitUseCase?.execute(visit)
                 }
             }catch (e: Exception){
-                Log.d("MyVM", "ошибка в #EditItemViewModel #insertVisit {${e.message}}")
+                Log.d("MyVmEdit", "ошибка в  #insertVisit {${e.message}}")
             }
         }
     }
@@ -72,15 +72,15 @@ class EditItemViewModel(
     fun updateVisit(visit: Visit, isSearchAddress: Boolean = false){
         viewModelScope.launch {
             try {
-                Log.d("MyVM", "визит изменяем")
+                Log.d("MyVmEdit", "изменяем визит(${visit.hashCode()})...")
                 repository.updateVisit(visit)
-                Log.d("MyVM", "визит изменен успешно")
+                Log.d("MyVmEdit", "...визит(${visit.hashCode()}) изменен успешно")
 
                 if (isSearchAddress){
                     setAddressVisitUseCase?.execute(visit)
                 }
             }catch (e: Exception){
-                Log.d("MyVM", "some bag #EditItemViewModel #updateVisit {${e.message}}")
+                Log.d("MyVmEdit", "some bag  #updateVisit {${e.message}}")
             }
         }
     }
@@ -89,9 +89,9 @@ class EditItemViewModel(
         viewModelScope.launch {
             try {
                 repository.deleteVisit(visit)
-                Log.d("MyVM", "визит удален успешно")
+                Log.d("MyVmEdit", "визит(${visit.hashCode()}) удален успешно")
             }catch (e: Exception){
-                Log.d("MyVM", "some bag #EditItemViewModel #deleteVisit {${e.message}}")
+                Log.d("MyVmEdit", "some bag  #deleteVisit {${e.message}}")
             }
         }
     }
@@ -99,19 +99,15 @@ class EditItemViewModel(
     fun insertClient(client: Client){
         viewModelScope.launch {
             try {
-                Log.d("MyVM", "визит добавляем")
+                Log.d("MyVmEdit", "добавляем клиента(${client.hashCode()})...")
                 repository.insertClient(client)
+                Log.d("MyVmEdit", "...клиент(${client.hashCode()}) добавлен успешно")
 
-//                if (client.address.isNullOrBlank()){
-//                    val address = addressRepository?.getAddressFromCoordinates(
-//                        client.latitude, client.longitude
-//                    )
-//                    val updateClient = client.copy(address = address)
-//                    repository.updateClient(updateClient)
-//                }
-                Log.d("MyVM", "визит добавился успешно")
+                if (client.address.isNullOrBlank()){
+                    setAddressClientUseCase?.execute(client)
+                }
             }catch (e: Exception){
-                Log.d("MyVM", "some bag @EditItemViewModel #insertClient {${e.message}}")
+                Log.d("MyVmEdit", "some bag @EditItemViewModel #insertClient {${e.message}}")
             }
         }
     }
@@ -119,18 +115,14 @@ class EditItemViewModel(
     fun updateClient(client: Client, isSearchAddress: Boolean = false){
         viewModelScope.launch {
             try {
-                Log.d("MyVM", "клиент изменяем")
+                Log.d("MyVmEdit", "изменяем клиента(${client.hashCode()})...")
                 repository.updateClient(client)
+                Log.d("MyVmEdit", "...клиент(${client.hashCode()}) изменен успешно")
                 if (isSearchAddress){
-//                    val address = addressRepository?.getAddressFromCoordinates(
-//                        client.latitude, client.longitude
-//                    ) ?: ""
-//                    val updateClient = client.copy(address = address)
-//                    repository.updateClient(updateClient)
+                    setAddressClientUseCase?.execute(client)
                 }
-                Log.d("MyVM", "клиент изменен успешно")
             }catch (e: Exception){
-                Log.d("MyVM", "some bag #EditItemViewModel #updateClient {${e.message}}")
+                Log.d("MyVmEdit", "some bag  #updateClient {${e.message}}")
             }
         }
     }
@@ -139,22 +131,23 @@ class EditItemViewModel(
         viewModelScope.launch {
             try {
                 repository.deleteClient(client)
-                Log.d("MyVM", "клиент удален успешно")
+                Log.d("MyVmEdit", "клиент(${client.hashCode()}) удален успешно")
             }catch (e: Exception){
-                Log.d("MyVM", "some bag #EditItemViewModel #deleteClient {${e.message}}")
+                Log.d("MyVmEdit", "some bag  #deleteClient {${e.message}}")
             }
         }
     }
 }
 class EditItemViewModelFactory(
     private val repository: Repository,
-    private val setAddressVisitUseCase: SetAddressVisitUseCase? = null
+    private val setAddressVisitUseCase: SetAddressVisitUseCase? = null,
+    private val setAddressClientUseCase: SetAddressClientUseCase? = null,
     ): ViewModelProvider.Factory{
     @RequiresApi(Build.VERSION_CODES.O)
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(EditItemViewModel::class.java)){
             @Suppress("UNCHECKED_CAST")
-            return EditItemViewModel(repository, setAddressVisitUseCase) as T
+            return EditItemViewModel(repository, setAddressVisitUseCase, setAddressClientUseCase) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
