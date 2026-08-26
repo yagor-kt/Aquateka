@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import com.subefu.aquateka.databinding.ActivityCreateOrderBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
@@ -19,6 +21,7 @@ import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
+import com.subefu.aquateka.model.domain.usecase.SetAddressVisitUseCase
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +37,8 @@ class CreateVisitActivity : AppCompatActivity() {
     private val viewModel: EditItemViewModel by viewModels{
         val dataBase = DataBase.getDB(applicationContext)
         val repository = RepositoryImpl(dataBase.getDao())
-        EditItemViewModelFactory(repository)
+        val setAddressVisitUseCase = SetAddressVisitUseCase(repository)
+        EditItemViewModelFactory(repository, setAddressVisitUseCase)
     }
 
     private val clientList = mutableListOf<Client>()
@@ -51,7 +55,6 @@ class CreateVisitActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
     }
 
     override fun onStart() {
@@ -91,6 +94,8 @@ class CreateVisitActivity : AppCompatActivity() {
         }
 
         binding.btPreserve.setOnClickListener {
+            if(isNotFillData() || isNotValidateData()) return@setOnClickListener
+
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Сохранить заказ?")
                 .setNegativeButton("НЕТ"){dialog, witch ->
@@ -99,16 +104,14 @@ class CreateVisitActivity : AppCompatActivity() {
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
 
-                    if(checkFillDataVisit().not()) return@setPositiveButton
-
                     val visit = Visit(
                         id = currentVisit?.id ?: 0,
                         clientId = currentClient?.clietn_id ?: throw NullPointerException("Введите клиента"),
                         address = binding.tfAddress.editText?.text.toString(),
-                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDouble(),
-                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDouble(),
-                        planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toInt(),
-                        planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toInt(),
+                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDoubleOrNull() ?: 0.0,
+                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDoubleOrNull() ?: 0.0,
+                        planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toIntOrNull() ?: 0,
+                        planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toIntOrNull() ?: 0,
                         actual_date = currentVisit?.actual_date ?: 0,
                         status = currentVisit?.status ?: MyConst.PLANNED,
                         work_type = binding.tfWorkType.editText?.text.toString(),
@@ -119,10 +122,17 @@ class CreateVisitActivity : AppCompatActivity() {
                     )
 
                     if(currentVisit != null)
-                        viewModel.updateVisit(visit)
+                        if (visit.address.isNullOrBlank()){
+                            viewModel.updateVisit(visit, true)
+                        }
+
+                        else if(visit.address == "-")
+                            viewModel.updateVisit(visit.copy(address = ""))
+                        else
+                            viewModel.updateVisit(visit)
                     else
                         viewModel.insertVisit(visit)
-                    this.finish()
+//                    this.finish()
                 }
             builder.show()
         }
@@ -176,15 +186,62 @@ class CreateVisitActivity : AppCompatActivity() {
         }
     }
 
-    fun checkFillDataVisit(): Boolean{
-        if (binding.tfName.editText?.text?.trim()?.isEmpty() == true) {
-            binding.tvName.error = "Это поле обязательно для заполнения"
-            return false
-        } else {
-            binding.tvName.error = null
-        }
+    fun isNotFillData(): Boolean{
+        return listOf(
+            checkMandatoryField(binding.tfName),
+            checkMandatoryField(binding.tfCoordinate),
+            checkMandatoryField(binding.tfPlannedVisit),
+            checkMandatoryField(binding.tfPeriod),
+            checkMandatoryField(binding.tfPrice)
+        ).any{ it.not() }
+    }
 
+    fun isNotValidateData(): Boolean{
+        return listOf(
+            checkValidateField(MyConst.BAD_COORDINATE) {
+                val latitude = binding.tfCoordinate.editText?.text!!.split(",")[0].toDouble()
+                val longitude = binding.tfCoordinate.editText?.text!!.split(",")[1].toDouble()
+            },
+            checkValidateField(MyConst.BAD_DATE) {
+                val planned_month = binding.tfPlannedVisit.editText?.text.toString().split(",")[1].trim().toInt()
+                val planned_year = binding.tfPlannedVisit.editText?.text.toString().split(",")[2].trim().toInt()
+                if (planned_year !in 2000..2300 || planned_month !in 1..12) throw Exception()
+            },
+            checkValidateField(MyConst.BAD_PRICE) {
+                val price = binding.tfPrice.editText?.text.toString().toInt()
+                if(price < 0) throw Exception()
+            },
+            checkValidateField(MyConst.BAD_PERIOD) {
+                val period = binding.tfPeriod.editText?.text.toString().toInt()
+                if(period < 1) throw Exception()
+            },
+        ).any{ it.not() }
+    }
+
+    //проверяем заполненность обязательного поля и подсвечиваем ошибку если пусто
+    fun checkMandatoryField(textInputLayout: TextInputLayout): Boolean{
+        val errorText = MyConst.MANDATORY_FIELD
+        if (textInputLayout.editText?.text.isNullOrBlank()) {
+            textInputLayout.error = errorText
+            textInputLayout.isErrorEnabled = true
+            Log.d("My.CreateVisit", "mandatory error: ${textInputLayout.editText?.text}")
+            return false
+        } else{
+            textInputLayout.error = null
+            textInputLayout.isErrorEnabled = false
+        }
         return true
+    }
+
+    fun checkValidateField(errorMessage: String, action: () -> Unit): Boolean{
+        try {
+            action()
+            return true
+        } catch (e: Exception){
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            Log.d("My.CreateVisit", "validate error: ${e.message}")
+            return false
+        }
     }
 
     override fun onDestroy() {

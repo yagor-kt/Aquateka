@@ -21,7 +21,7 @@ import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.CreateVisitActivity
-import com.subefu.aquateka.view.activity.ProfileCustomerActivity
+import com.subefu.aquateka.view.activity.ProfileClientActivity
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import java.time.Instant
@@ -96,8 +96,8 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
             }
 
             tvCustomerInfo.setOnClickListener {
-                val intent = Intent(requireContext(), ProfileCustomerActivity::class.java).apply {
-                    putExtra(MyConst.CUSTOMER, client)
+                val intent = Intent(requireContext(), ProfileClientActivity::class.java).apply {
+                    putExtra(MyConst.CLIENT, client)
                 }
                 startActivity(intent)
             }

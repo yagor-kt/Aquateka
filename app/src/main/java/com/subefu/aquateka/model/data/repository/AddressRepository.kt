@@ -10,29 +10,29 @@ import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import com.yandex.mapkit.search.Session
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.Deferred
 
 
 class AddressRepository {
-
-    // Инициализируем SearchManager через фабрику
     private val searchManager: SearchManager = SearchFactory.getInstance()
         .createSearchManager(SearchManagerType.ONLINE)
 
+    // Держим ссылку на сессию на уровне репозитория, чтобы GC её не удалил
     private var searchSession: Session? = null
 
-    suspend fun getAddressFromCoordinates(
+    // Функция принимает callback, который отработает по завершении
+    fun getAddressFromCoordinates(
         latitude: Double,
-        longitude: Double
-    ): String? = suspendCancellableCoroutine { continuation ->
-
-        Log.d("MyYandex", "request fun getAddressFromCoordinates")
+        longitude: Double,
+        onResult: (String?) -> Unit
+    ) {
+        Log.d("MyYandex", "Запуск прямого запроса в Яндекс...")
         val targetPoint = Point(latitude, longitude)
         val searchOptions = SearchOptions().apply {
             searchTypes = SearchType.GEO.value
             resultPageSize = 1
         }
-        Log.d("MyYandex", "targetPoint: $targetPoint \nsearchOptions: $searchOptions")
+
         searchSession = searchManager.submit(
             targetPoint,
             null,
@@ -45,20 +45,15 @@ class AddressRepository {
                         ?.address
                         ?.formattedAddress
 
-                    Log.d("MyYandex", "Успех геокодирования: $addressText")
-                    if (continuation.isActive) continuation.resumeWith(Result.success(addressText))
+                    Log.d("MyYandex", "Яндекс ответил успехом: $addressText")
+                    onResult(addressText)
                 }
 
-                override fun onSearchError(p0: com.yandex.runtime.Error) {
-                    Log.d("MyYandex", "Ошибка геокодирования: ${p0.toString()}")
-                    if (continuation.isActive) continuation.resumeWith(Result.success(null))
+                override fun onSearchError(error: com.yandex.runtime.Error) {
+                    Log.d("MyYandex", "Яндекс ответил ошибкой: $error")
+                    onResult(null)
                 }
             }
         )
-        continuation.invokeOnCancellation {
-            searchSession?.cancel()
-        }
-        Log.d("MyYandex", "$searchSession")
     }
-
 }
