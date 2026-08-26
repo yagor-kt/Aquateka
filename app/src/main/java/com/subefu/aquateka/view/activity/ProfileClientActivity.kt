@@ -1,11 +1,13 @@
 package com.subefu.aquateka.view.activity
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +22,7 @@ import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlin.getValue
 
-class ProfileCustomerActivity : AppCompatActivity() {
+class ProfileClientActivity : AppCompatActivity() {
 
     private var _binding: ActivityProfileCustomerBinding? = null
     private val binding get() = _binding!!
@@ -32,6 +34,20 @@ class ProfileCustomerActivity : AppCompatActivity() {
     }
 
     lateinit var currentClient: Client
+
+    private val startChildActivityLauncher = registerForActivityResult (
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            val returnedValue = data?.getParcelableExtra<Client>(MyConst.CLIENT)
+            returnedValue?.let {
+                currentClient = it
+                loadUserInfo()
+            }
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +61,7 @@ class ProfileCustomerActivity : AppCompatActivity() {
             insets
         }
 
-        currentClient = intent.getParcelableExtra(MyConst.CUSTOMER, Client::class.java)
+        currentClient = intent.getParcelableExtra(MyConst.CLIENT, Client::class.java)
             ?: throw NullPointerException("client is null, intent was incorrect")
 
         loadUserInfo()
@@ -67,16 +83,16 @@ class ProfileCustomerActivity : AppCompatActivity() {
     fun setClickListeners(){
         binding.btDelete.setOnClickListener {
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Изменить клиента \"${currentClient.name}?\"")
+            builder
+                .setTitle("Удалить клиента \"${currentClient.name}?\"")
+                .setMessage("Это действие невозможно отменить, также будут удалены все визиты этого клиента!")
                 .setNegativeButton("НЕТ"){dialog, witch ->
                     dialog.cancel()
                 }
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
-                    val intent = Intent(this, CreateClientActivity::class.java).apply {
-                        putExtra(MyConst.CUSTOMER, currentClient)
-                    }
-                    startActivity(intent)
+                    viewModel.deleteClient(currentClient)
+                    this.finish()
                 }
             builder.show()
         }
@@ -90,31 +106,11 @@ class ProfileCustomerActivity : AppCompatActivity() {
                 .setPositiveButton("ДА"){dialog, witch ->
                     dialog.cancel()
                     val intent = Intent(this, CreateClientActivity::class.java).apply {
-                        putExtra(MyConst.CUSTOMER, currentClient)
+                        putExtra(MyConst.CLIENT, currentClient)
                     }
-                    startActivity(intent)
+                    startChildActivityLauncher.launch(intent)
                 }
             builder.show()
         }
     }
-
-    fun getAlertDialogBuilder(
-        title: String, message: String?,
-        negativeTitle: String, positiveTitle: String,
-        onNegativeClick: (DialogInterface) -> Unit,
-        onPositiveClick: (DialogInterface) -> Unit,
-        ): AlertDialog.Builder
-    {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(title)
-            .setMessage(message ?: "")
-            .setNegativeButton(negativeTitle){dialog, witch ->
-                onNegativeClick(dialog)
-            }
-            .setPositiveButton(positiveTitle){dialog, witch ->
-                onPositiveClick(dialog)
-            }
-        return builder
-    }
-
 }

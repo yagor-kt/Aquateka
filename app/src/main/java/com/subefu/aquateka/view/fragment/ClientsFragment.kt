@@ -25,7 +25,7 @@ import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.view.activity.CreateClientActivity
-import com.subefu.aquateka.view.activity.ProfileCustomerActivity
+import com.subefu.aquateka.view.activity.ProfileClientActivity
 import com.subefu.aquateka.view.adapter.ClientCardAdapter
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
@@ -83,8 +83,8 @@ class ClientsFragment : Fragment() {
         rvAdapter = ClientCardAdapter(
             clients = clients,
             onItemClick = { item ->
-                val intent = Intent(requireContext(), ProfileCustomerActivity::class.java)
-                intent.putExtra(MyConst.CUSTOMER, item)
+                val intent = Intent(requireContext(), ProfileClientActivity::class.java)
+                intent.putExtra(MyConst.CLIENT, item)
                 startActivity(intent)
         })
 
