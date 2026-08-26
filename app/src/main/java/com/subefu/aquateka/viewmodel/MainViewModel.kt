@@ -49,7 +49,7 @@ class MainViewModel(private val repository: Repository): ViewModel() {
                 }
             }catch (e: Exception){
                 _visits.value = emptyList()
-                Log.d("MyLog", "some bag @loadVisits {${e.message}}")
+                Log.d("MyVmMain", "some bag @loadVisits {${e.message}}")
             }
         }
     }
@@ -62,7 +62,7 @@ class MainViewModel(private val repository: Repository): ViewModel() {
                 }
             }catch (e: Exception){
                 _clients.value = emptyList()
-                Log.d("MyLog", "some bag @loadClients {${e.message}}")
+                Log.d("MyVmMain", "some bag @loadClients {${e.message}}")
             }
         }
     }
@@ -75,7 +75,7 @@ class MainViewModel(private val repository: Repository): ViewModel() {
                 }
             }catch (e: Exception){
                 _visits.value = emptyList()
-                Log.d("MyLog", "some bag @loadVisitsOnMap {${e.message}}")
+                Log.d("MyVmMain", "some bag @loadVisitsOnMap {${e.message}}")
             }
         }
     }
@@ -94,6 +94,7 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         return sb.toString()
     }
 }
+
 class MainViewModelFactory(private val repository: Repository): ViewModelProvider.Factory{
     @RequiresApi(Build.VERSION_CODES.O)
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
