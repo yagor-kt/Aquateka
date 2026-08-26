@@ -1,6 +1,5 @@
 package com.subefu.aquateka.view.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -28,8 +27,8 @@ class ClientCardAdapter(
     override fun getItemCount() = clients.size
 
     fun updateList(newList: List<Client>){
-        Log.d("MyAdapter", "newList $newList")
-        Log.d("MyAdapter", "oldList $clients")
+        /*Log.d("MyAdapter", "newList $newList")
+        Log.d("MyAdapter", "oldList $clients")*/
         val diffCallback = ClientDiffCallback(newList = newList, oldList = clients)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         clients = newList
@@ -53,6 +52,5 @@ class ClientCardAdapter(
                 tvPhone.text = client.phone
             }
         }
-
     }
 }

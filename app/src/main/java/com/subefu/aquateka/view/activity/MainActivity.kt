@@ -25,17 +25,11 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    /*private val viewModel: MainViewModel by viewModels{
-        val dataBase = DataBase.getDB(applicationContext)
-        val repository = RepositoryImpl(dataBase.getDao())
-        MainViewModelFactory(repository)
-    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(this.getColor(R.color.dark_surface)))
         setContentView(binding.root)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false

@@ -1,6 +1,6 @@
 package com.subefu.aquateka.view.adapter
 
-import android.util.Log
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -61,9 +61,10 @@ class VisitCardAdapter(
         fun bind(item: VisitWithClient) {
             binding.apply {
                 tvName.text = item.client.name
-                tvDate.text = if(item.visit.actual_date == 0) "---" else item.visit.actual_date.toString()
+                tvDate.text = if(item.visit.actual_date == 0) "[Не выполнен]" else item.visit.actual_date.toString()
                 tvPhone.text = item.client.phone
                 tvPrice.text = "${item.visit.price}₽"
+
                 tvStatus.text = when(item.visit.status){
                     MyConst.COMPLETED -> MyConst.SHORT_COMPLETED
                     MyConst.POSTPONED -> MyConst.SHORT_POSTPONED
@@ -75,12 +76,14 @@ class VisitCardAdapter(
                 tvCoordinate.text = "${item.visit.latitude}/${item.visit.longitude}"
 
                 ivStatusColor.imageTintList = when(item.visit.status){
-                    MyConst.COMPLETED -> ContextCompat.getColorStateList(binding.root.context, R.color.green)
-                    MyConst.POSTPONED -> ContextCompat.getColorStateList(binding.root.context, R.color.blue)
-                    MyConst.PLANNED -> ContextCompat.getColorStateList(binding.root.context, R.color.orange)
-                    else -> ContextCompat.getColorStateList(binding.root.context, R.color.dark_surface)
+                    MyConst.COMPLETED -> getColor(R.color.green)
+                    MyConst.POSTPONED -> getColor(R.color.blue)
+                    MyConst.PLANNED -> getColor(R.color.orange)
+                    else -> getColor(R.color.dark_surface)
                 }
             }
         }
+
+        fun getColor(colorId: Int): ColorStateList? = ContextCompat.getColorStateList(binding.root.context, colorId)
     }
 }

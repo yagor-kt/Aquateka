@@ -49,9 +49,9 @@ class CreateClientActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val type = intent.getStringExtra("type")
+        val type = intent.getStringExtra(MyConst.TYPE)
 
-        if(type == MyConst.CLIENT)
+        if(type == MyConst.CREATE)
             binding.tvTitle.text = "Создание клиента"
         else{
             binding.tvTitle.text = "Редактирвоание клиента"
@@ -59,81 +59,92 @@ class CreateClientActivity : AppCompatActivity() {
         }
 
         binding.btCancelled.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Отменить ${binding.tvTitle.text}?")
-                .setMessage("Изменения не будут сохранены")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-                    this.finish()
-                }
+            val builder = getCancelledClientDialog()
             builder.show()
         }
 
         binding.btPreserve.setOnClickListener {
             if(isNotFillData() || isNotValidateData()) return@setOnClickListener
 
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Сохранить клиента?")
-                .setNegativeButton("НЕТ"){dialog, witch ->
-                    dialog.cancel()
-                }
-                .setPositiveButton("ДА"){dialog, witch ->
-                    dialog.cancel()
-
-                    val client = Client(
-                        clietn_id = currentClient?.clietn_id ?: 0,
-                        name = binding.tfName.editText?.text.toString().trim(),
-                        phone = binding.tfPhone.editText?.text.toString().trim(),
-                        address = binding.tfAddress.editText?.text.toString().trim(),
-                        latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDouble(),
-                        longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDouble(),
-                        period_month = binding.tfPeriod.editText?.text.toString().trim().toIntOrNull() ?: 1,
-                        comment = binding.tfComment.editText?.text.toString().trim(),
-                    )
-
-                    //если пустой адрес, то ищем по координатам
-                    //иначе если "-", то запишем пустой адрес
-                    //иначе пишем в адрес то что есть
-                    if(currentClient != null)
-                        if (client.address.isNullOrBlank())
-                            viewModel.updateClient(client, true)
-                        else if(client.address == "-")
-                            viewModel.updateClient(client.copy(address = ""))
-                        else
-                            viewModel.updateClient(client)
-                    else
-                        viewModel.insertClient(client)
-
-                    setResult(RESULT_OK, Intent().putExtra(MyConst.CLIENT, client))
-                    this.finish()
-                }
+            val builder = getPreserveClientDialog()
             builder.show()
         }
     }
 
     fun setupEditData(){
-        val client = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(MyConst.CLIENT,
-                Client::class.java)
-        } else {
+        val client = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            intent.getParcelableExtra(MyConst.CLIENT, Client::class.java)
+         else
             intent.getParcelableExtra(MyConst.CLIENT)
-        }
 
         client?.let { client ->
             currentClient = client
-
-            binding.apply {
-                tfAddress.editText?.setText(client.address)
-                tfComment.editText?.setText(client.comment)
-                tfCoordinate.editText?.setText("${client.latitude},${client.longitude}")
-                tfName.editText?.setText(client.name)
-                tfPeriod.editText?.setText(client.period_month.toString())
-                tfPhone.editText?.setText(client.phone)
-            }
+            fillUiClientData(client)
         }
+    }
+
+    fun fillUiClientData(client: Client){
+        binding.apply {
+            tfAddress.editText?.setText(client.address)
+            tfComment.editText?.setText(client.comment)
+            tfCoordinate.editText?.setText("${client.latitude},${client.longitude}")
+            tfName.editText?.setText(client.name)
+            tfPeriod.editText?.setText(client.period_month.toString())
+            tfPhone.editText?.setText(client.phone)
+        }
+    }
+
+    fun getCancelledClientDialog(): AlertDialog.Builder{
+        return AlertDialog.Builder(this)
+            .setTitle("Отменить ${binding.tvTitle.text}?")
+            .setMessage("Изменения не будут сохранены")
+            .setNegativeButton("НЕТ"){dialog, witch ->
+                dialog.cancel()
+            }
+            .setPositiveButton("ДА"){dialog, witch ->
+                dialog.cancel()
+                this.finish()
+            }
+    }
+
+    fun getPreserveClientDialog(): AlertDialog.Builder{
+        val builder = AlertDialog.Builder(this)
+        val name = binding.tfName.editText?.text.toString().trim()
+
+        builder.setTitle("Сохранить клиента \"$name\"?")
+            .setNegativeButton("НЕТ"){dialog, witch -> dialog.cancel() }
+            .setPositiveButton("ДА"){dialog, witch ->
+                dialog.cancel()
+
+                val client = getClientFromUI()
+
+                if(currentClient != null)
+                    if (client.address.isNullOrBlank())
+                        viewModel.updateClient(client, true)
+                    else if(client.address == "-")
+                        viewModel.updateClient(client.copy(address = ""))
+                    else
+                        viewModel.updateClient(client)
+                else
+                    viewModel.insertClient(client)
+
+                setResult(RESULT_OK, Intent().putExtra(MyConst.CLIENT, client))
+                this.finish()
+            }
+        return builder
+    }
+
+    fun getClientFromUI(): Client{
+        return Client(
+            clietn_id = currentClient?.clietn_id ?: 0,
+            name = binding.tfName.editText?.text.toString().trim(),
+            phone = binding.tfPhone.editText?.text.toString().trim(),
+            address = binding.tfAddress.editText?.text.toString().trim(),
+            latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDouble(),
+            longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDouble(),
+            period_month = binding.tfPeriod.editText?.text.toString().trim().toIntOrNull() ?: 1,
+            comment = binding.tfComment.editText?.text.toString().trim(),
+        )
     }
 
     fun isNotFillData(): Boolean{
@@ -141,6 +152,19 @@ class CreateClientActivity : AppCompatActivity() {
             checkMandatoryField(binding.tfName),
             checkMandatoryField(binding.tfPhone),
             checkMandatoryField(binding.tfCoordinate),
+        ).any{ it.not() }
+    }
+
+    fun isNotValidateData(): Boolean{
+        return listOf(
+            checkValidateField(MyConst.BAD_COORDINATE) {
+                val latitude = binding.tfCoordinate.editText?.text!!.split(",")[0].toDouble()
+                val longitude = binding.tfCoordinate.editText?.text!!.split(",")[1].toDouble()
+            },
+            checkValidateField(MyConst.BAD_PHONE) {
+                val phone = binding.tfPhone.editText?.text.toString()
+                if(phone.length != 11 || phone.toLongOrNull() == null) throw Exception()
+            }
         ).any{ it.not() }
     }
 
@@ -157,20 +181,7 @@ class CreateClientActivity : AppCompatActivity() {
         }
         return true
     }
-
-    fun isNotValidateData(): Boolean{
-        return listOf(
-            checkValidateField(MyConst.BAD_COORDINATE) {
-                val latitude = binding.tfCoordinate.editText?.text!!.split(",")[0].toDouble()
-                val longitude = binding.tfCoordinate.editText?.text!!.split(",")[1].toDouble()
-            },
-            checkValidateField(MyConst.BAD_PHONE) {
-                val phone = binding.tfPhone.editText?.text.toString()
-                if(phone.length != 11 || phone.toLongOrNull() == null) throw Exception()
-            }
-        ).any{ it.not() }
-    }
-
+    //проверяем не дропнет ли ошибку при валидации, обрабатываем ее
     fun checkValidateField(errorMessage: String, action: () -> Unit): Boolean{
         try {
             action()
