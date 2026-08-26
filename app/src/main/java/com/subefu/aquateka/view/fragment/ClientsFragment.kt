@@ -45,7 +45,7 @@ class ClientsFragment : Fragment() {
     }
 
     private lateinit var rvAdapter: ClientCardAdapter
-    var clients = listOf<Client>()
+    private var clients = listOf<Client>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,7 +60,29 @@ class ClientsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //сброс фокуса строки поиска
+        setupUI()
+        setupRV()
+        setupExportImport()
+
+        sharedViewModel.clients
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach { clients ->
+                this.clients = clients
+                rvAdapter.updateList(clients)
+                updateShortInfo(clients)
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        binding.fabAddCustomer.setOnClickListener {
+            val intent = Intent(requireContext(), CreateClientActivity::class.java)
+            intent.putExtra(MyConst.TYPE, MyConst.CREATE)
+            startActivity(intent)
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun setupUI(){
+        //сброс фокуса строки поиска при клике за ее пределами
         binding.main.setOnTouchListener { _, _ ->
             if (binding.etSearch.hasFocus()) {
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -70,45 +92,33 @@ class ClientsFragment : Fragment() {
             false
         }
 
-        sharedViewModel.clients
-            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
-            .onEach { clients ->
-                this.clients = clients
-                rvAdapter.updateList(clients)
-                updateShortInfo(clients)
-//                Log.d("MyDB", clients.toString())
+        binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
+            val searchText = text.toString().trim()
+            val newList = clients.filter {
+                it.name.contains(searchText, true) ||
+                        it.phone.contains(searchText, true)
             }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
+            rvAdapter.updateList(newList)
+            updateShortInfo(newList)
+        }
+    }
 
+    fun setupRV(){
         rvAdapter = ClientCardAdapter(
             clients = clients,
             onItemClick = { item ->
                 val intent = Intent(requireContext(), ProfileClientActivity::class.java)
                 intent.putExtra(MyConst.CLIENT, item)
                 startActivity(intent)
-        })
+            })
 
         binding.rvCustomers.apply{
             adapter = rvAdapter
             Log.d("MyLog", this.size.toString())
         }
+    }
 
-        binding.fabAddCustomer.setOnClickListener {
-            val intent = Intent(requireContext(), CreateClientActivity::class.java)
-            intent.putExtra(MyConst.TYPE, MyConst.CREATE)
-            startActivity(intent)
-        }
-
-        binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
-            val searchText = text.toString().trim()
-            val newList = clients.filter {
-                it.name.contains(searchText, true) ||
-                it.phone.contains(searchText, true)
-            }
-            rvAdapter.updateList(newList)
-            updateShortInfo(newList)
-        }
-
+    fun setupExportImport(){
         binding.imExport.setOnClickListener {
             Toast.makeText(requireContext(), "Экспорт в разработке", Toast.LENGTH_SHORT).show()
             //TODO(Сделать экспорт заказов по текущему месяцу)
@@ -121,7 +131,6 @@ class ClientsFragment : Fragment() {
 
     fun updateShortInfo(visits: List<Client>){
         val all = visits.size
-
         binding.apply {
             tvAll.text = "Всего: $all"
         }
@@ -131,6 +140,4 @@ class ClientsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
-
 }

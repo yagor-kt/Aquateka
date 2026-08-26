@@ -59,9 +59,9 @@ class CreateVisitActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val type = intent.getStringExtra("type")
+        val type = intent.getStringExtra(MyConst.TYPE)
 
-        if(type == "create")
+        if(type == MyConst.CREATE)
             binding.tvTitle.text = "Создание заказа"
         else {
             setupEditData()

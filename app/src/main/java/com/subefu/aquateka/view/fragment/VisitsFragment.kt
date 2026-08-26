@@ -44,6 +44,7 @@ import java.util.Locale
 class VisitsFragment : Fragment() {
     private var _binding: FragmentOrdersBinding? = null
     private val binding get() = _binding!!
+
     private val sharedViewModel: MainViewModel by activityViewModels {
         val dataBase = DataBase.getDB(requireContext().applicationContext)
         val repository = RepositoryImpl(dataBase.getDao())
@@ -51,10 +52,13 @@ class VisitsFragment : Fragment() {
     }
 
     private lateinit var rvAdapter: VisitCardAdapter
-    var currantDay = LocalDate.now()
-    var currentVisits = listOf<VisitWithClient>()
+    private var currantDay = LocalDate.now()
+    private var currentVisits = listOf<VisitWithClient>()
+
     private var csvTextToWrite = ""
-    val createCsvLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/comma-separated-values")) { uri ->
+    private val createCsvLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/comma-separated-values")
+    ) { uri ->
         uri?.let { saveCsvToUri(it, csvTextToWrite) }
     }
 
@@ -70,6 +74,33 @@ class VisitsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupUI()
+        setupRV()
+        setupDateChange()
+        setupExportImport()
+
+        sharedViewModel.visits
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach { visits ->
+                rvAdapter.updateList(visits)
+                currentVisits = visits
+                updateShortInfo(visits)
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        binding.fabAddOrder.setOnClickListener {
+            val intent = Intent(requireContext(), CreateVisitActivity::class.java)
+            intent.putExtra(MyConst.TYPE, MyConst.CREATE)
+            startActivity(intent)
+        }
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun setupUI(){
+        updateMonthInfo(currantDay)
+        updateShortInfo(currentVisits)
+
         //сброс фокуса строки поиска
         binding.main.setOnTouchListener { _, _ ->
             if (binding.etSearch.hasFocus()) {
@@ -80,79 +111,23 @@ class VisitsFragment : Fragment() {
             false
         }
 
-        setupUI()
-
-        sharedViewModel.visits
-            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
-            .onEach { visits ->
-                rvAdapter.updateList(visits)
-                currentVisits = visits
-                updateShortInfo(visits)
-                Log.d("MyDB", visits.toString())
-            }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
-
-        binding.fabAddOrder.setOnClickListener {
-            val intent = Intent(requireContext(), CreateVisitActivity::class.java)
-            intent.putExtra("type", "create")
-            startActivity(intent)
-        }
-
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
             val searchText = text.toString().lowercase().trim()
             val newList = currentVisits.filter {
                 it.client.name.contains(searchText, true) ||
-                it.client.phone.contains(searchText, true) ||
-                ("${it.client.latitude} ${it.client.longitude}").contains(searchText, true)
+                        it.client.phone.contains(searchText, true) ||
+                        ("${it.client.latitude} ${it.client.longitude}").contains(searchText, true)
             }
             rvAdapter.updateList(newList)
             updateShortInfo(newList)
         }
-
-        //TODO("сделать экспорт/импорт")
-        binding.imExport.setOnClickListener {
-            val month = binding.tvMonth.text.toString()
-            val year = binding.tvYear.text.toString()
-            exportVisitsToCsv(month, year)
-        }
-        binding.imImport.setOnClickListener {
-            Toast.makeText(requireContext(), "Импорт в разработке", Toast.LENGTH_SHORT).show()
-            //TODO(Сделать импорт заказов по текущему месяцу)
-        }
-
-        //setup current date, edit date after change in layout
-        binding.imMonthPrevious.setOnClickListener {
-            currantDay = currantDay.plusMonths(1)
-            updateMonthInfo(currantDay)
-        }
-        binding.imMonthNext.setOnClickListener {
-            currantDay = currantDay.minusMonths(1)
-            updateMonthInfo(currantDay)
-        }
-
-        binding.dateContainer.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
-                Log.d("MyVisits", "$selectedYear,$selectedMonth,$selectedDay")
-                sharedViewModel.loadVisits(selectedMonth+1, selectedYear)
-                currantDay = LocalDate.of(selectedYear, selectedMonth+1, selectedDay)
-                updateMonthInfo(currantDay)
-            }, year, month, day).show()
-        }
     }
 
-
-    fun setupUI(){
+    fun setupRV(){
         rvAdapter = VisitCardAdapter(
             emptyList(),
             onItemClick = { item ->
-                val bottomSheet = VisitInfoFragment.newInstance(
-                    visit = item,
-                )
+                val bottomSheet = VisitInfoFragment.newInstance(visit = item,)
                 bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
             },
             onLongItemClick = { item ->
@@ -175,9 +150,44 @@ class VisitsFragment : Fragment() {
         binding.rvOrders.apply{
             adapter = rvAdapter
         }
+    }
 
-        binding.tvMonth.apply {
+    fun setupExportImport(){
+        //TODO("сделать экспорт/импорт")
+        binding.imExport.setOnClickListener {
+            val month = binding.tvMonth.text.toString()
+            val year = binding.tvYear.text.toString()
+            exportVisitsToCsv(month, year)
+        }
+        binding.imImport.setOnClickListener {
+            Toast.makeText(requireContext(), "Импорт в разработке", Toast.LENGTH_SHORT).show()
+            //TODO(Сделать импорт заказов по текущему месяцу)
+        }
+    }
+
+    fun setupDateChange(){
+        //setup current date, edit date after change in layout
+        binding.imMonthPrevious.setOnClickListener {
+            currantDay = currantDay.plusMonths(1)
             updateMonthInfo(currantDay)
+        }
+        binding.imMonthNext.setOnClickListener {
+            currantDay = currantDay.minusMonths(1)
+            updateMonthInfo(currantDay)
+        }
+
+        binding.dateContainer.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+                Log.d("MyVisits", "$selectedYear,$selectedMonth,$selectedDay")
+                sharedViewModel.loadVisits(selectedMonth+1, selectedYear)
+                currantDay = LocalDate.of(selectedYear, selectedMonth+1, selectedDay)
+                updateMonthInfo(currantDay)
+            }, year, month, day).show()
         }
     }
 
@@ -209,7 +219,7 @@ class VisitsFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 csvTextToWrite = csvContent
                 // Открывает системное окно, где пользователь выберет папку "Загрузки" и введет имя файла
-                createCsvLauncher.launch("visits_${year}_${month}.csv")
+                createCsvLauncher.launch("visits_${month}_${year}.csv")
             }
         }
     }
@@ -218,10 +228,10 @@ class VisitsFragment : Fragment() {
         try {
             requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(content.toByteArray(Charsets.UTF_8))
-                Toast.makeText(context, "Файл успешно сохранен!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Файл успешно сохранен!", Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "Ошибка сохранения: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Ошибка сохранения: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
