@@ -19,16 +19,17 @@ import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
+import com.yandex.mapkit.MapKitFactory
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModels{
+    /*private val viewModel: MainViewModel by viewModels{
         val dataBase = DataBase.getDB(applicationContext)
         val repository = RepositoryImpl(dataBase.getDao())
         MainViewModelFactory(repository)
-    }
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,17 +45,23 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        /*val navHostFragment = supportFragmentManager
-            .findFragmentById(binding.navHostFragment.id) as NavHostFragment
-        val navController = navHostFragment.navController
-        val bottomNavigationView = binding.botNav
-        bottomNavigationView.setupWithNavController(navController)*/
-
         binding.botNav.apply {
             val navHostFragment = supportFragmentManager
                 .findFragmentById(binding.navHostFragment.id) as NavHostFragment
             val navController = navHostFragment.navController
             setupWithNavController(navController)
         }
+
+        MapKitFactory.initialize(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        MapKitFactory.getInstance().onStart()
+    }
+
+    override fun onStop() {
+        MapKitFactory.getInstance().onStop()
+        super.onStop()
     }
 }

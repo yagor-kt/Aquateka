@@ -63,11 +63,6 @@ class MapFragment : Fragment() {
         MainViewModelFactory(repository)
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        MapKitFactory.initialize(context)
-    }
-
     @SuppressLint("ResourceType")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -92,7 +87,7 @@ class MapFragment : Fragment() {
             .onEach { visits ->
                 currentVisits = visits
                 updateVisits()
-                Log.d("MyDB", visits.toString())
+//                Log.d("MyDB", visits.toString())
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -100,7 +95,7 @@ class MapFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { clients ->
                 currentClients = clients
-                Log.d("MyDB", clients.toString())
+//                Log.d("MyDB", clients.toString())
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -274,13 +269,11 @@ class MapFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        MapKitFactory.getInstance().onStart()
         mapView.onStart()
     }
 
     override fun onStop() {
         mapView.onStop()
-        MapKitFactory.getInstance().onStop()
         super.onStop()
     }
 

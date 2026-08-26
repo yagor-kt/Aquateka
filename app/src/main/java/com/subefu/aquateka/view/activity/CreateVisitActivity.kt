@@ -122,17 +122,15 @@ class CreateVisitActivity : AppCompatActivity() {
                     )
 
                     if(currentVisit != null)
-                        if (visit.address.isNullOrBlank()){
+                        if (visit.address.isNullOrBlank())
                             viewModel.updateVisit(visit, true)
-                        }
-
                         else if(visit.address == "-")
                             viewModel.updateVisit(visit.copy(address = ""))
                         else
                             viewModel.updateVisit(visit)
                     else
                         viewModel.insertVisit(visit)
-//                    this.finish()
+                    this.finish()
                 }
             builder.show()
         }

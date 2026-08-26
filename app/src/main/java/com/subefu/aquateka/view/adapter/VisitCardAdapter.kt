@@ -27,15 +27,15 @@ class VisitCardAdapter(
     }
 
     override fun onBindViewHolder(holder: OrdersCardViewHolder, position: Int) {
-        Log.d("MyAdapter", "bind")
+//        Log.d("MyAdapter", "bind")
         holder.bind(orders[position])
     }
 
     override fun getItemCount() = orders.size
 
     fun updateList(newList: List<VisitWithClient>){
-        Log.d("MyAdapter", "newList $newList")
-        Log.d("MyAdapter", "oldList $orders")
+        /*Log.d("MyAdapter", "newList $newList")
+        Log.d("MyAdapter", "oldList $orders")*/
         val diffCallback = VisitDiffCallback(newList = newList, oldList = orders)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         orders = newList

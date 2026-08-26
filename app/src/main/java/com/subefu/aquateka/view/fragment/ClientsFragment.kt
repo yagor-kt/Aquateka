@@ -76,7 +76,7 @@ class ClientsFragment : Fragment() {
                 this.clients = clients
                 rvAdapter.updateList(clients)
                 updateShortInfo(clients)
-                Log.d("MyDB", clients.toString())
+//                Log.d("MyDB", clients.toString())
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
