@@ -48,22 +48,22 @@ class MapFragment : Fragment() {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var mapView: MapView
-
-    private lateinit var rvAdapter: VisitCardAdapter
-    var currantDay = LocalDate.now()
-    var currentVisits = listOf<VisitWithClient>()
-    var currentClients = listOf<Client>()
-
-    var isViewMonthSelection = false
-
     private val sharedViewModel: MainViewModel by activityViewModels {
         val dataBase = DataBase.getDB(requireContext().applicationContext)
         val repository = RepositoryImpl(dataBase.getDao())
         MainViewModelFactory(repository)
     }
 
-    @SuppressLint("ResourceType")
+    private lateinit var mapView: MapView
+    private lateinit var rvAdapter: VisitCardAdapter
+
+    private var currantDay = LocalDate.now()
+    private var currentVisits = listOf<VisitWithClient>()
+    private var currentClients = listOf<Client>()
+
+    private var isViewMonthSelection = false
+    private var points: List<Point> = emptyList()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -78,7 +78,6 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //orders
         setupRecyclerView()
         setupChips()
 
@@ -87,7 +86,6 @@ class MapFragment : Fragment() {
             .onEach { visits ->
                 currentVisits = visits
                 updateVisits()
-//                Log.d("MyDB", visits.toString())
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -95,7 +93,6 @@ class MapFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { clients ->
                 currentClients = clients
-//                Log.d("MyDB", clients.toString())
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -104,12 +101,9 @@ class MapFragment : Fragment() {
         rvAdapter = VisitCardAdapter(
             emptyList(),
             onItemClick = { item ->
-                val bottomSheet = VisitInfoFragment.newInstance(
-                    visit = item,
-                )
+                val bottomSheet = VisitInfoFragment.newInstance(visit = item)
                 bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
-            }, onLongItemClick = {
-                    item ->
+            }, onLongItemClick = { item ->
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle("Завершить заказ?")
                     .setNegativeButton("Перенести"){dialog, witch ->
@@ -123,75 +117,63 @@ class MapFragment : Fragment() {
                         dialog.cancel()
                     })
                 builder.show()
-            })
+            }
+        )
 
-        binding.rvOrders.apply {
-            adapter = rvAdapter
-            setHasFixedSize(true)
-        }
+        binding.rvOrders.adapter = rvAdapter
     }
 
     fun setupChips(){
         binding.chipGroupMap.setOnCheckedStateChangeListener { group, checkedIds ->
-            var points: List<Point> = emptyList()
-
             when(checkedIds.firstOrNull()){
-                binding.chipAllClient.id -> {
-                    isViewMonthSelection = false
-                     points = currentClients.map {
-                        Point(it.latitude.toDouble(), it.longitude.toDouble())
-                     }
-                    updateShortInfo(currentClients)
-                    setPointsOnMap(points)
-                    rvAdapter.updateList(emptyList())
-                }
-                binding.chipCurrentMonth.id -> {
-                    isViewMonthSelection = false
-                    sharedViewModel.loadVisitsOnMap(currantDay.monthValue, currantDay.year)
-                    updateVisits()
-                }
-                binding.chipMonth.id -> {
-                    val calendar = Calendar.getInstance()
-                    val year = calendar.get(Calendar.YEAR)
-                    val month = calendar.get(Calendar.MONTH)
-                    val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-                    DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
-                        Log.d("MyMap", "$selectedYear,$selectedMonth,$selectedDay")
-                        sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
-                        binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1).month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
-                        isViewMonthSelection = true
-                    }, year, month, day).show()
-                    updateVisits()
-                }
+                binding.chipAllClient.id -> { selectedAllClients() }
+                binding.chipCurrentMonth.id -> { selectedCurrentMonth() }
+                binding.chipMonth.id -> { selectedMonth() }
             }
         }
 
         binding.chipMonth.setOnClickListener { view ->
             if (isViewMonthSelection){
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-                DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
-                    Log.d("MyMap", "$selectedYear,$selectedMonth,$selectedDay")
-                    sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
-                    binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1).month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
-                }, year, month, day).show()
-                updateVisits()
+                selectedMonth()
             }
         }
     }
 
-    fun updateVisits(){
-        rvAdapter.updateList(currentVisits)
-        val points = currentVisits.map {
-            Point(it.visit.latitude.toDouble(), it.visit.longitude.toDouble()
-            )
-        }
+    fun selectedAllClients(){
+        isViewMonthSelection = false
+        points = currentClients.map { Point(it.latitude, it.longitude) }
+        updateShortInfo(currentClients)
         setPointsOnMap(points)
+        rvAdapter.updateList(emptyList())
+    }
+
+    fun selectedCurrentMonth(){
+        isViewMonthSelection = false
+        sharedViewModel.loadVisitsOnMap(currantDay.monthValue, currantDay.year)
+        updateVisits()
+    }
+
+    fun selectedMonth(){
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+            sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
+            binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1)
+                .month
+                .getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+            isViewMonthSelection = true
+        }, year, month, day).show()
+        updateVisits()
+    }
+
+    fun updateVisits(){
+        points = currentVisits.map { Point(it.visit.latitude, it.visit.longitude) }
         updateShortInfo(currentVisits)
+        setPointsOnMap(points)
+        rvAdapter.updateList(currentVisits)
     }
 
     fun updateShortInfo(visits: List<VisitWithClient>){
@@ -214,33 +196,30 @@ class MapFragment : Fragment() {
     }
 
     fun setPointsOnMap(points: List<Point>){
-        mapView.run{
-            map.mapObjects.clear()
-            points.onEach {
-                map.mapObjects.addPlacemark(it)
-            }
-            map.mapObjects.addTapListener { mapObject, point ->
-                Toast.makeText(requireContext(), mapObject.userData.toString(), Toast.LENGTH_LONG).show()
-                true
-            }
-            getBoundingBoxForPosition(points).let { boundingBox ->
-                if(mapView.height != 0){
-                    val topLeft = ScreenPoint(70f, 70f)
-                    val width = binding.mapView.width.toFloat()
-                    val height = binding.mapView.height.toFloat()
-                    Log.d("MyMap", "$width, $height")
-                    val bottomRight = ScreenPoint(width - 70f, height - 70f)
-                    val screenRect = ScreenRect(topLeft, bottomRight)
-                    mapWindow.focusRect = screenRect
-                }
-                val cameraPosition = map.cameraPosition(boundingBox, 0f, 0f, null)
-                map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.5f), null)
-            }
+        mapView.map.mapObjects.clear()
+        points.onEach {
+            mapView.map.mapObjects.addPlacemark(it)
         }
+        //TODO(Обработать нажатие на точку)
+        if(mapView.height != 0)
+            mapView.mapWindow.focusRect = getScreenRect()
+        val boundingBox = getBoundingBoxForPosition(points)
+        val cameraPosition = mapView.map.cameraPosition(boundingBox, 0f, 0f, null)
+        mapView.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.2f), null)
+    }
+
+    fun getScreenRect(): ScreenRect{
+        val topLeft = ScreenPoint(70f, 70f)
+        val width = binding.mapView.width.toFloat()
+        val height = binding.mapView.height.toFloat()
+        val bottomRight = ScreenPoint(width - 70f, height - 70f)
+        return ScreenRect(topLeft, bottomRight)
     }
 
     fun getBoundingBoxForPosition(points: List<Point>): BoundingBox{
-        if(points.isEmpty()) return BoundingBox(Point(54.710162, 20.510137), Point(43.983211, 132.919176))
+        if(points.isEmpty())
+            //крайние точки России
+            return BoundingBox(Point(54.710162, 20.510137), Point(43.983211, 132.919176))
 
         var maxLat = points[0].latitude
         var minLat = points[0].latitude
@@ -281,5 +260,4 @@ class MapFragment : Fragment() {
         _binding = null
         super.onDestroyView()
     }
-
 }
