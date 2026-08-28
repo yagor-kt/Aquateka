@@ -34,7 +34,6 @@ class SetAddressClientUseCase(
                     // Переключаемся на фоновый поток строго для записи в БД
                     val updateClient = client.copy(address = finalAddress)
                     repository.updateClient(updateClient)
-                    Log.d("MyUseCaseClient", "...БД обновлена")
 
                     Log.d("MyUseCaseClient", "...адрес клиента(${client.hashCode()}) обновлен")
                     AppEventBus.post(AppMessage.Success("Адрес клиента определен"))
@@ -44,7 +43,5 @@ class SetAddressClientUseCase(
                 }
             }
         }
-
-        Log.d("MyUseCaseClient", "Метод execute завершен, поток свободен, await() больше ничего не блокирует.")
     }
 }

@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +68,20 @@ class EditItemViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList(),
+        )
+
+    val client: StateFlow<Client?> = clientId
+        .filterNotNull()
+        .flatMapLatest { id ->
+            repository.getClientById(id)
+                .catch { e ->
+                    postEvent(("Ошибка загрузки визитов: ${e.localizedMessage}"))
+                }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
         )
 
     fun setClientId(clientId: Int){
@@ -129,11 +144,11 @@ class EditItemViewModel(
         viewModelScope.launch {
             try {
                 Log.d("MyVmEdit", "добавляем клиента(${client.hashCode()})...")
-                repository.insertClient(client)
+                val newId = repository.insertClient(client)
                 Log.d("MyVmEdit", "...клиент(${client.hashCode()}) добавлен успешно")
 
                 if (client.address.isNullOrBlank())
-                    setAddressClientUseCase.execute(client)
+                    setAddressClientUseCase.execute(client.copy(clietn_id = newId))
                 postEvent("Клиент создан успешно")
             }catch (e: Exception) {
                 if (e is CancellationException) throw e

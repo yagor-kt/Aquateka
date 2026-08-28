@@ -14,11 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.textfield.TextInputLayout
 import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.ActivityCreateCustomerBinding
-import com.subefu.aquateka.model.data.db.DataBase
-import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
-import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlin.getValue
@@ -113,13 +110,10 @@ class CreateClientActivity : AppCompatActivity() {
         builder.setTitle("Сохранить клиента \"$name\"?")
             .setNegativeButton("НЕТ"){dialog, witch -> dialog.cancel() }
             .setPositiveButton("ДА"){dialog, witch ->
-                dialog.cancel()
-
                 val client = getClientFromUI()
+                viewModel.saveClient(currentClient, client.copy())
 
-                viewModel.saveClient(currentClient, client)
-
-                setResult(RESULT_OK, Intent().putExtra(MyConst.CLIENT, client))
+                dialog.cancel()
                 this.finish()
             }
         return builder

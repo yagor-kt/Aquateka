@@ -12,7 +12,8 @@ abstract class MyConst{
         val SHORT_COMPLETED = "Завер."
         val SHORT_CANCELLED = "Отмен."
 
-        val CLIENT = "CUSTOMER"
+        val CLIENT = "CLIENT"
+        val CLIENT_ID = "CLIENT_ID"
         val VISIT_WITH_CLIENT = "VISIT_WITH_CLIENT"
         val CREATE = "CREATE"
         val TYPE = "TYPE"
