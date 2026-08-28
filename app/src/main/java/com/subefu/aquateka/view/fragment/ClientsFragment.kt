@@ -108,7 +108,7 @@ class ClientsFragment : Fragment() {
             clients = clients,
             onItemClick = { item ->
                 val intent = Intent(requireContext(), ProfileClientActivity::class.java)
-                intent.putExtra(MyConst.CLIENT, item)
+                intent.putExtra(MyConst.CLIENT_ID, item.clietn_id)
                 startActivity(intent)
             })
 

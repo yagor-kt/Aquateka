@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -27,13 +26,16 @@ import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
-import com.subefu.aquateka.view.fragment.VisitInfoFragment
 import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.flow.retryWhen
 import kotlin.getValue
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -54,17 +56,6 @@ class ProfileClientActivity : AppCompatActivity() {
     private lateinit var currentClient: Client
     private var visits = listOf<VisitWithClient>()
 
-    private val startChildActivityLauncher
-    = registerForActivityResult (ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val returnedValue = result.data?.getParcelableExtra<Client>(MyConst.CLIENT, Client::class.java)
-            returnedValue?.let {
-                currentClient = it
-                loadUserInfo()
-            }
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,14 +68,18 @@ class ProfileClientActivity : AppCompatActivity() {
             insets
         }
 
-        setupRV()
+        val clientId = intent.getIntExtra(MyConst.CLIENT_ID, -1)
+        viewModel.setClientId(clientId)
 
-        currentClient = intent.getParcelableExtra(MyConst.CLIENT, Client::class.java)
-            ?: throw NullPointerException("client is null, intent was incorrect")
+        viewModel.client
+            .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+            .filterNotNull()
+            .onEach { client ->
+                currentClient = client
+                updateUserInfo()
+            }
+            .launchIn(lifecycleScope)
 
-        loadUserInfo()
-
-        viewModel.setClientId(currentClient.clietn_id)
         viewModel.visits
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
             .onEach { visits ->
@@ -106,6 +101,8 @@ class ProfileClientActivity : AppCompatActivity() {
             }
             .launchIn(lifecycleScope)
 
+        setupRV()
+
         binding.btDelete.setOnClickListener {
             val builder = getDeleteClientDialog()
             builder.show()
@@ -126,7 +123,7 @@ class ProfileClientActivity : AppCompatActivity() {
         }.show()
     }
 
-    fun loadUserInfo(){
+    fun updateUserInfo(){
         val userInfo = """
             |ФИО: ${currentClient.name}
             |Телефон: ${currentClient.phone}
@@ -173,7 +170,7 @@ class ProfileClientActivity : AppCompatActivity() {
                 dialog.cancel()
                 val intent = Intent(this, CreateClientActivity::class.java)
                 intent.putExtra(MyConst.CLIENT, currentClient)
-                startChildActivityLauncher.launch(intent)
+                startActivity(intent)
             }
     }
 }

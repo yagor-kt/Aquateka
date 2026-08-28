@@ -9,10 +9,11 @@ interface Repository {
     fun getVisitWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClient>>
     fun getClients(): Flow<List<Client>>
 
-    suspend fun getVisitByClient(clientId: Int): Flow<List<Visit>>
+    fun getVisitByClient(clientId: Int): Flow<List<Visit>>
+    fun getClientById(id: Int): Flow<Client>
 
-    suspend fun insertVisit(visit: Visit)
-    suspend fun insertClient(client: Client)
+    suspend fun insertVisit(visit: Visit): Int
+    suspend fun insertClient(client: Client): Int
 
     suspend fun updateVisit(visit: Visit)
     suspend fun updateClient(client: Client)

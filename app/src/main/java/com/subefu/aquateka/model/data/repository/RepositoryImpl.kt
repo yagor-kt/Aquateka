@@ -1,6 +1,7 @@
 package com.subefu.aquateka.model.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.subefu.aquateka.model.data.db.DAO
 import com.subefu.aquateka.model.data.db.utill.toEntity
 import com.subefu.aquateka.model.data.db.utill.toModel
@@ -11,11 +12,16 @@ import com.subefu.aquateka.model.domain.repository.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 
 class RepositoryImpl(val dao: DAO): Repository {
+
     override fun getVisitWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClient>> {
         return dao.getVisitsWithClientForMonth(month, year)
+            .map { it.map { it.toModel() } }
+    }
+
+    override fun getVisitByClient(clientId: Int): Flow<List<Visit>> {
+        return dao.getVisitsByClientId(clientId)
             .map { it.map { it.toModel() } }
     }
 
@@ -24,32 +30,34 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it.map { it.toModel() } }
     }
 
-    override suspend fun getVisitByClient(clientId: Int): Flow<List<Visit>> {
-         return dao.getVisitsByClientId(clientId)
-             .map { it.map { it.toModel() } }
-    }
-
-    override suspend fun insertClient(client: Client) {
-            dao.createClient(client.toEntity())
+    override fun getClientById(id: Int): Flow<Client> {
+        return dao.getClientById(id)
+            .map { it.toModel() }
     }
 
     override suspend fun deleteVisit(visit: Visit) {
-            dao.deleteVisit(visit.toEntity())
+        dao.deleteVisit(visit.toEntity())
     }
 
     override suspend fun updateVisit(visit: Visit) {
-            dao.updateVisit(visit.toEntity())
+        dao.updateVisit(visit.toEntity())
     }
 
-    override suspend fun insertVisit(visit: Visit) {
-            dao.createVisit(visit.toEntity())
+    override suspend fun insertVisit(visit: Visit): Int {
+        return dao.createVisit(visit.toEntity()).toInt()
     }
+
 
     override suspend fun deleteClient(client: Client) {
-            dao.deleteClient(client.toEntity())
+        dao.deleteClient(client.toEntity())
     }
 
     override suspend fun updateClient(client: Client) {
-            dao.updateClient(client.toEntity())
+        dao.updateClient(client.toEntity())
+        Log.d("MYRepImpl", "update client: $client")
+    }
+
+    override suspend fun insertClient(client: Client): Int {
+        return dao.createClient(client.toEntity()).toInt()
     }
 }
