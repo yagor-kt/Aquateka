@@ -61,7 +61,7 @@ class VisitCardAdapter(
         fun bind(item: VisitWithClient) {
             binding.apply {
                 tvName.text = item.client.name
-                tvDate.text = if(item.visit.actual_date == 0) "[Не выполнен]" else item.visit.actual_date.toString()
+                tvDate.text = if(item.visit.actual_date == 0) "——" else item.visit.actual_date.toString()
                 tvPhone.text = item.client.phone
                 tvPrice.text = "${item.visit.price}₽"
 

@@ -22,28 +22,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        app:singleSelection="true"
+
+    <Button
+        android:id="@+id/bt_delete"
+        style="@style/Button.IconOnly"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="8dp"
+        app:icon="@drawable/ic_delete"
+        app:layout_constraintEnd_toStartOf="@+id/bt_edit"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/bt_edit"
+        style="@style/Button.IconOnly"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="8dp"
+        app:icon="@drawable/ic_edit"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <Button
-            android:id="@+id/bt_delete"
-            style="@style/Button.IconOnly"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_delete" />
-
-        <Button
-            android:id="@+id/bt_edit"
-            style="@style/Button.IconOnly"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_edit" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+        app:layout_constraintTop_toTopOf="parent" />
 
 
         <TextView
@@ -68,10 +68,9 @@
         app:layout_constraintTop_toBottomOf="@+id/userInfo" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_customers"
+        android:id="@+id/rv_visits"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingHorizontal="12dp"
         android:paddingTop="15dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"

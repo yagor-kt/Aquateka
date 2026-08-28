@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 
 class SetAddressVisitUseCase(
     private val repository: Repository,
-    private var addressRepository: AddressRepository? = null
+    private var addressRepository: AddressRepository
 ) {
     // Используем Scope на базе Dispatchers.Main.immediate для работы с Яндексом
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -22,7 +22,7 @@ class SetAddressVisitUseCase(
     fun execute(visit: Visit) {
         Log.d("MyUseCaseVisit", "поиск адреса визита(${visit.hashCode()})...")
 
-        addressRepository?.getAddressFromCoordinates(visit.latitude, visit.longitude) { address ->
+        addressRepository.getAddressFromCoordinates(visit.latitude, visit.longitude) { address ->
 
             // Этот блок кода выполнится ТОЛЬКО тогда, когда Яндекс вернет ответ.
             // Даже если это произойдет через 5 минут или при следующем открытии приложения!
@@ -45,9 +45,5 @@ class SetAddressVisitUseCase(
         }
 
         Log.d("MyUseCaseVisit", "Метод execute завершен, поток свободен, await() больше ничего не блокирует.")
-    }
-
-    fun setAddressRepository(addressRepository: AddressRepository) {
-        this.addressRepository = addressRepository
     }
 }

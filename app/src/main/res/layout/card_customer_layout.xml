@@ -53,18 +53,16 @@
 
             <TextView
                 android:id="@+id/tv_phone"
-                android:layout_width="wrap_content"
+                android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 style="@style/InfoText"
-                android:layout_weight="2"
                 tools:text="+7(983)432-43-23"/>
 
             <com.subefu.aquateka.view.utils.AlwaysMarqueeTextView
                 android:id="@+id/tv_address"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/InfoText"
-                android:layout_weight="1"
                 android:gravity="end"
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit="marquee_forever"

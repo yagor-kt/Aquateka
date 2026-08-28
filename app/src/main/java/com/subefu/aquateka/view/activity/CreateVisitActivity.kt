@@ -11,9 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputLayout
+import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.ActivityCreateOrderBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
@@ -25,6 +28,8 @@ import com.subefu.aquateka.model.domain.usecase.SetAddressVisitUseCase
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.getValue
@@ -35,10 +40,7 @@ class CreateVisitActivity : AppCompatActivity() {
     private val binding get() = _binding!!
 
     private val viewModel: EditItemViewModel by viewModels{
-        val dataBase = DataBase.getDB(applicationContext)
-        val repository = RepositoryImpl(dataBase.getDao())
-        val setAddressVisitUseCase = SetAddressVisitUseCase(repository)
-        EditItemViewModelFactory(repository, setAddressVisitUseCase)
+        EditItemViewModelFactory(App.repository)
     }
 
     private val clientList = mutableListOf<Client>()
@@ -59,6 +61,25 @@ class CreateVisitActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        viewModel.clients
+            .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+            .onEach { clients ->
+                val customers = clients.map { it.name }.toTypedArray()
+
+                (binding.tfName.editText as MaterialAutoCompleteTextView)
+                    .setSimpleItems(customers)
+                clientList.clear()
+                clientList.addAll(clients)
+
+                val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
+                selectClient?.let { client ->
+                    val autoCompleteTextView = binding.tvName
+                    autoCompleteTextView.setText(client.name, false)
+                }
+
+            }
+            .launchIn(lifecycleScope)
 
         val type = intent.getStringExtra(MyConst.TYPE)
         if(type == MyConst.CREATE)
@@ -143,17 +164,7 @@ class CreateVisitActivity : AppCompatActivity() {
                 dialog.cancel()
 
                 val visit = getVisitFromUI()
-
-                if(currentVisit != null) {
-                    if (visit.address.isNullOrBlank())
-                        viewModel.updateVisit(visit, true)
-                    else if (visit.address == "-")
-                        viewModel.updateVisit(visit.copy(address = ""))
-                    else
-                        viewModel.updateVisit(visit)
-                }
-                else
-                    viewModel.insertVisit(visit)
+                viewModel.saveVisit(currentVisit, visit)
                 this.finish()
             }
         return builder
@@ -233,28 +244,6 @@ class CreateVisitActivity : AppCompatActivity() {
             Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             Log.d("My.CreateVisit", "validate error: ${e.message}")
             return false
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            viewModel.clients.collect { clients ->
-                val customers = clients.map { it.name }.toTypedArray()
-                withContext(Dispatchers.Main) {
-                    (binding.tfName.editText as MaterialAutoCompleteTextView).setSimpleItems(
-                        customers
-                    )
-                    clientList.clear()
-                    clientList.addAll(clients)
-
-                    val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
-                    selectClient?.let { client ->
-                        val autoCompleteTextView = binding.tvName
-                        autoCompleteTextView.setText(client.name, false)
-                    }
-                }
-            }
         }
     }
 

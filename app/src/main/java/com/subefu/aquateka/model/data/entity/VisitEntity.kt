@@ -3,10 +3,12 @@ package com.subefu.aquateka.model.data.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "Visit",
+    indices = [Index(value = ["id", "clientId"])],
     foreignKeys = [
         ForeignKey(
             entity = ClientEntity::class,
