@@ -17,7 +17,7 @@ interface DAO {
     //Visits
     @Query("Select * from visit where plannedMonth = :month and plannedYear = :year")
     fun getVisitsWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClientEntity>>
-    @Query("Select * from visit where clientId = :clientId")
+    @Query("Select * from visit where clientId = :clientId order by plannedYear, plannedMonth")
     fun getVisitsByClientId(clientId: Int): Flow<List<VisitEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

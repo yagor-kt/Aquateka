@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.textfield.TextInputLayout
+import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.ActivityCreateCustomerBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
@@ -28,9 +29,7 @@ class CreateClientActivity : AppCompatActivity() {
     private val binding get() = _binding!!
 
     private val viewModel: EditItemViewModel by viewModels{
-        val dataBase = DataBase.getDB(applicationContext)
-        val repository = RepositoryImpl(dataBase.getDao())
-        EditItemViewModelFactory(repository)
+        EditItemViewModelFactory(App.repository)
     }
 
     private var currentClient: Client? = null
@@ -118,15 +117,7 @@ class CreateClientActivity : AppCompatActivity() {
 
                 val client = getClientFromUI()
 
-                if(currentClient != null)
-                    if (client.address.isNullOrBlank())
-                        viewModel.updateClient(client, true)
-                    else if(client.address == "-")
-                        viewModel.updateClient(client.copy(address = ""))
-                    else
-                        viewModel.updateClient(client)
-                else
-                    viewModel.insertClient(client)
+                viewModel.saveClient(currentClient, client)
 
                 setResult(RESULT_OK, Intent().putExtra(MyConst.CLIENT, client))
                 this.finish()

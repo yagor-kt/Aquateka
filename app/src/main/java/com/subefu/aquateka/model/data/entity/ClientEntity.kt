@@ -1,9 +1,12 @@
 package com.subefu.aquateka.model.data.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "Client")
+@Entity(
+    tableName = "Client",
+    indices = [Index(value = ["clientId"])])
 data class ClientEntity(
     @PrimaryKey(autoGenerate = true)
     val clientId: Int?,

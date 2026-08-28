@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.subefu.aquateka.App
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentOrderInfoBinding
 import com.subefu.aquateka.model.data.db.DataBase
@@ -39,9 +40,7 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EditItemViewModel by viewModels{
-        val dataBase = DataBase.getDB(requireContext().applicationContext)
-        val repository = RepositoryImpl(dataBase.getDao())
-        EditItemViewModelFactory(repository)
+        EditItemViewModelFactory(App.repository)
     }
 
     private val visitWithClient: VisitWithClient? by lazy {

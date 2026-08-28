@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     id("kotlin-parcelize")
-    id("androidx.room") version "2.8.1"
+    id("androidx.room") version "2.7.0"
 }
 
 android {
@@ -22,6 +22,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "MAP_API_kEY", "\"${getMapApiKey()}\"")
+
+
     }
 
     buildTypes {
@@ -50,9 +52,6 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
-ksp{
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
 
 fun getMapApiKey(): String{
     val properties = Properties()
