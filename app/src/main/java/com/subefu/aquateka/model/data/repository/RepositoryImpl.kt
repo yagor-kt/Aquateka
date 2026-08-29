@@ -30,9 +30,9 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it.map { it.toModel() } }
     }
 
-    override fun getClientById(id: Int): Flow<Client> {
+    override fun getClientById(id: Int): Flow<Client?> {
         return dao.getClientById(id)
-            .map { it.toModel() }
+            .map { it?.toModel() }
     }
 
     override suspend fun deleteVisit(visit: Visit) {

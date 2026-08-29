@@ -1,11 +1,14 @@
 package com.subefu.aquateka.view.activity
 
+import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,12 +20,17 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
+import com.subefu.aquateka.App
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.ActivityMainBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
+import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.model.Client
+import com.subefu.aquateka.model.domain.model.VisitWithClient
+import com.subefu.aquateka.view.fragment.VisitInfoFragment
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import com.yandex.mapkit.MapKitFactory
@@ -34,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -62,6 +71,7 @@ class MainActivity : AppCompatActivity() {
                 when(message){
                     is AppMessage.Error -> showSnackBar(message.text, true)
                     is AppMessage.Success -> showSnackBar(message.text, false)
+                    is AppMessage.TouchMapPoint -> { showSnackBar(message.text, false, message.item) }
                     else -> {}
                 }
                 Log.d("MyMain", "event: $message")
@@ -69,12 +79,28 @@ class MainActivity : AppCompatActivity() {
             .launchIn(lifecycleScope)
     }
 
-    fun showSnackBar(text: String, isError: Boolean){
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun showSnackBar(text: String, isError: Boolean, item: Any? = null){
         val view = binding.root
         Snackbar.make(view, text, Snackbar.LENGTH_LONG).apply {
+            setAnchorView(binding.botNav)
             if (isError)
                 setBackgroundTint(Color.RED)
-            setAnchorView(binding.botNav)
+            item?.let{
+                setAction("ПОДРОБНЕЕ"){
+                    when (item) {
+                        is Client -> {
+                            val intent = Intent(this@MainActivity, ProfileClientActivity::class.java)
+                            intent.putExtra(MyConst.CLIENT_ID, item.clietn_id)
+                            startActivity(intent)
+                        }
+                        is VisitWithClient -> {
+                            val bottomSheet = VisitInfoFragment.newInstance(visit = item)
+                            bottomSheet.show(supportFragmentManager, "MyBottomSheetDialog")
+                        }
+                    }
+                }
+            }
         }.show()
     }
 

@@ -30,6 +30,7 @@ import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
+import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -124,27 +125,10 @@ class VisitsFragment : Fragment() {
     }
 
     fun setupRV(){
-        rvAdapter = VisitCardAdapter(
+        rvAdapter = VisitCardAdapterFactory.getInstance(
             emptyList(),
-            onItemClick = { item ->
-                val bottomSheet = VisitInfoFragment.newInstance(visit = item,)
-                bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
-            },
-            onLongItemClick = { item ->
-                val builder = AlertDialog.Builder(requireContext())
-                builder.setTitle("Завершить заказ?")
-                    .setNegativeButton("Перенести"){dialog, witch ->
-                        dialog.cancel()
-                    }
-                    .setPositiveButton("ДА"){dialog, witch ->
-                        dialog.cancel()
-                        //TODO(завершение заказа, след дата = текущая + период)
-                    }
-                    .setNeutralButton("Выбрать месяц", {dialog, witch ->
-                        dialog.cancel()
-                    })
-                builder.show()
-            }
+            requireContext(),
+            childFragmentManager,
         )
 
         binding.rvOrders.apply{
@@ -184,7 +168,7 @@ class VisitsFragment : Fragment() {
 
             DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
                 Log.d("MyVisits", "$selectedYear,$selectedMonth,$selectedDay")
-                sharedViewModel.loadVisits(selectedMonth+1, selectedYear)
+                sharedViewModel.setCurrentDate(selectedMonth+1, selectedYear)
                 currantDay = LocalDate.of(selectedYear, selectedMonth+1, selectedDay)
                 updateMonthInfo(currantDay)
             }, year, month, day).show()
@@ -196,7 +180,7 @@ class VisitsFragment : Fragment() {
         binding.tvMonth.text = date.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
         binding.tvYear.text = date.year.toString()
 
-        sharedViewModel.loadVisits(date.monthValue, date.year)
+        sharedViewModel.setCurrentDate(date.monthValue, date.year)
     }
 
     fun updateShortInfo(visits: List<VisitWithClient>){
