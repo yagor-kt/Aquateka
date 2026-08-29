@@ -36,7 +36,7 @@ interface DAO {
     fun getClients(): Flow<List<ClientEntity>>
 
     @Query("select * from client where clientId = :id")
-    fun getClientById(id: Int): Flow<ClientEntity>
+    fun getClientById(id: Int): Flow<ClientEntity?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun createClient(client: ClientEntity): Long

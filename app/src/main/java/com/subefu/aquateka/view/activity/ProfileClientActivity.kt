@@ -138,7 +138,11 @@ class ProfileClientActivity : AppCompatActivity() {
 
     fun setupRV(){
         Log.d("MyProfileClient", "visits size: ${visits.size}")
-        rvAdapter = VisitCardAdapterFactory.getInstance(visits, this, supportFragmentManager)
+        rvAdapter = VisitCardAdapterFactory.getInstance(
+            visits,
+            this,
+            supportFragmentManager
+        )
 
         binding.rvVisits.apply{
             adapter = rvAdapter

@@ -43,9 +43,10 @@ class EditItemViewModel(
 
     val clients: StateFlow<List<Client>> = repository
         .getClients()
+        .distinctUntilChanged()
         .catch { e ->
             emit(emptyList())
-            postEvent(("Ошибка загрузки клиентов: ${e.localizedMessage}"))
+            postEvent(("Ошибка загрузки клиентов: ${e.localizedMessage}"), true)
         }
         .stateIn(
             scope = viewModelScope,
@@ -61,7 +62,7 @@ class EditItemViewModel(
             repository.getVisitByClient(id)
                 .catch { e ->
                     emit(emptyList())
-                    postEvent(("Ошибка загрузки визитов: ${e.localizedMessage}"))
+                    postEvent(("Ошибка загрузки визитов: ${e.localizedMessage}"), true)
                 }
         }
         .stateIn(
@@ -74,9 +75,9 @@ class EditItemViewModel(
         .filterNotNull()
         .flatMapLatest { id ->
             repository.getClientById(id)
-                .catch { e ->
-                    postEvent(("Ошибка загрузки визитов: ${e.localizedMessage}"))
-                }
+        }
+        .catch { e ->
+            postEvent(("Ошибка загрузки визитов клиента: ${e.localizedMessage}"), true)
         }
         .stateIn(
             scope = viewModelScope,

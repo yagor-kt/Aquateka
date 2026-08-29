@@ -6,13 +6,22 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.subefu.aquateka.model.data.db.utill.AppMessage
+import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,64 +29,61 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 class MainViewModel(private val repository: Repository): ViewModel() {
-    private val _visits
-        = MutableStateFlow<List<VisitWithClient>>(emptyList())
-    val visits: StateFlow<List<VisitWithClient>> = _visits.asStateFlow()
 
-    private val _visitsOnMap
-        = MutableStateFlow<List<VisitWithClient>>(emptyList())
-    val visitsOnMap: StateFlow<List<VisitWithClient>> = _visitsOnMap.asStateFlow()
+    private val currantDate: MutableStateFlow<Pair<Int, Int>>
+        = MutableStateFlow(Pair(LocalDate.now().monthValue, LocalDate.now().year))
 
-    private val _clients
-        = MutableStateFlow<List<Client>>(emptyList())
-    val clients = _clients.asStateFlow()
+    private val currantDateForMap: MutableStateFlow<Pair<Int, Int>>
+        = MutableStateFlow(Pair(LocalDate.now().monthValue, LocalDate.now().year))
 
-    init {
-        val currantDay = LocalDate.now()
-        loadVisits(currantDay.monthValue, currantDay.year)
-        loadVisitsOnMap(currantDay.monthValue, currantDay.year)
-        loadClients()
+    val visits: StateFlow<List<VisitWithClient>> = currantDate
+        .flatMapLatest { date ->
+            repository.getVisitWithClientForMonth(date.first, date.second)
+        }
+        .distinctUntilChanged()
+        .catch { e ->
+            emit(emptyList())
+            postEvent(("Ошибка загрузки визитов: ${e.localizedMessage}"), true)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val visitsOnMap: StateFlow<List<VisitWithClient>> = currantDateForMap
+        .flatMapLatest { date ->
+            repository.getVisitWithClientForMonth(date.first, date.second)
+        }
+        .distinctUntilChanged()
+        .catch { e ->
+            emit(emptyList())
+            postEvent(("Ошибка загрузки визитов для карты: ${e.localizedMessage}"), true)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val clients: StateFlow<List<Client>> = repository.getClients()
+        .distinctUntilChanged()
+        .catch { e ->
+            emit(emptyList())
+            postEvent(("Ошибка загрузки клиентов: ${e.localizedMessage}"), true)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun setCurrentDate(month: Int, year: Int){
+        currantDate.value = Pair(month, year)
     }
 
-    fun loadVisits(month: Int, year: Int){
-        viewModelScope.launch {
-            try {
-                repository.getVisitWithClientForMonth(month, year).collect{ visits ->
-                    _visits.value = visits.sortedBy {
-                        it.visit.status
-                    }
-                }
-            }catch (e: Exception){
-                _visits.value = emptyList()
-                Log.d("MyVmMain", "some bag @loadVisits {${e.message}}")
-            }
-        }
-    }
-
-    fun loadClients(){
-        viewModelScope.launch {
-            try {
-                repository.getClients().collect{ clients ->
-                    _clients.value = clients
-                }
-            }catch (e: Exception){
-                _clients.value = emptyList()
-                Log.d("MyVmMain", "some bag @loadClients {${e.message}}")
-            }
-        }
-    }
-
-    fun loadVisitsOnMap(month: Int, year: Int){
-        viewModelScope.launch {
-            try {
-                repository.getVisitWithClientForMonth(month, year).collect{ visits ->
-                    _visitsOnMap.value = visits
-                }
-            }catch (e: Exception){
-                _visits.value = emptyList()
-                Log.d("MyVmMain", "some bag @loadVisitsOnMap {${e.message}}")
-            }
-        }
+    fun setCurrentDateForMap(month: Int, year: Int){
+        currantDateForMap.value = Pair(month, year)
     }
 
     fun generateCsvData(visits: List<VisitWithClient>): String {
@@ -92,6 +98,13 @@ class MainViewModel(private val repository: Repository): ViewModel() {
             sb.append("${v.visit.price};${v.visit.parts};${v.visit.comment}")
         }
         return sb.toString()
+    }
+
+    fun postEvent(message: String, isError:  Boolean = false){
+        if (isError)
+            AppEventBus.post(AppMessage.Error(message))
+        else
+            AppEventBus.post(AppMessage.Success(message))
     }
 }
 

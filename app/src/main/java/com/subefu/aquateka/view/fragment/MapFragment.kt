@@ -19,13 +19,18 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentMapBinding
 import com.subefu.aquateka.model.data.db.DataBase
+import com.subefu.aquateka.model.data.db.utill.AppMessage
+import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
+import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
+import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import com.yandex.mapkit.Animation
@@ -34,7 +39,10 @@ import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
+import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.time.LocalDate
@@ -55,6 +63,7 @@ class MapFragment : Fragment() {
     }
 
     private lateinit var mapView: MapView
+    private lateinit var markerTapListener : MapObjectTapListener
     private lateinit var rvAdapter: VisitCardAdapter
 
     private var currantDay = LocalDate.now()
@@ -62,7 +71,7 @@ class MapFragment : Fragment() {
     private var currentClients = listOf<Client>()
 
     private var isViewMonthSelection = false
-    private var points: List<Point> = emptyList()
+    private var points: List<Pair<Point, Any>> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -95,29 +104,28 @@ class MapFragment : Fragment() {
                 currentClients = clients
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        markerTapListener = MapObjectTapListener { mapObject, point ->
+            val placeMark = mapObject as? PlacemarkMapObject
+            val client = placeMark?.userData as? Client
+            val visitWithClient = placeMark?.userData as? VisitWithClient
+
+            client?.let {
+                AppEventBus.post(AppMessage.TouchMapPoint("Выбран клиент: ${client.name}", client))
+            }
+            visitWithClient?.let {
+                AppEventBus.post(AppMessage.TouchMapPoint("Выбран визит: ${it.client.name}", visitWithClient))
+            }
+
+            true
+        }
     }
 
     fun setupRecyclerView(){
-        rvAdapter = VisitCardAdapter(
+        rvAdapter = VisitCardAdapterFactory.getInstance(
             emptyList(),
-            onItemClick = { item ->
-                val bottomSheet = VisitInfoFragment.newInstance(visit = item)
-                bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
-            }, onLongItemClick = { item ->
-                val builder = AlertDialog.Builder(requireContext())
-                builder.setTitle("Завершить заказ?")
-                    .setNegativeButton("Перенести"){dialog, witch ->
-                        dialog.cancel()
-                    }
-                    .setPositiveButton("ДА"){dialog, witch ->
-                        dialog.cancel()
-                        //TODO(завершение заказа, след дата = текущая + период)
-                    }
-                    .setNeutralButton("Выбрать месяц", {dialog, witch ->
-                        dialog.cancel()
-                    })
-                builder.show()
-            }
+            requireContext(),
+            childFragmentManager
         )
 
         binding.rvOrders.adapter = rvAdapter
@@ -141,7 +149,12 @@ class MapFragment : Fragment() {
 
     fun selectedAllClients(){
         isViewMonthSelection = false
-        points = currentClients.map { Point(it.latitude, it.longitude) }
+        points = currentClients.map { client ->
+            Pair(
+                Point(client.latitude, client.longitude),
+                client
+            )
+        }
         updateShortInfo(currentClients)
         setPointsOnMap(points)
         rvAdapter.updateList(emptyList())
@@ -149,7 +162,7 @@ class MapFragment : Fragment() {
 
     fun selectedCurrentMonth(){
         isViewMonthSelection = false
-        sharedViewModel.loadVisitsOnMap(currantDay.monthValue, currantDay.year)
+        sharedViewModel.setCurrentDateForMap(currantDay.monthValue, currantDay.year)
         updateVisits()
     }
 
@@ -160,7 +173,7 @@ class MapFragment : Fragment() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
-            sharedViewModel.loadVisitsOnMap(selectedMonth+1, selectedYear)
+            sharedViewModel.setCurrentDateForMap(selectedMonth+1, selectedYear)
             binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1)
                 .month
                 .getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
@@ -170,7 +183,12 @@ class MapFragment : Fragment() {
     }
 
     fun updateVisits(){
-        points = currentVisits.map { Point(it.visit.latitude, it.visit.longitude) }
+        points = currentVisits.map { visitWithClient ->
+            Pair(
+                Point(visitWithClient.visit.latitude, visitWithClient.visit.longitude),
+                visitWithClient
+            )
+        }
         updateShortInfo(currentVisits)
         setPointsOnMap(points)
         rvAdapter.updateList(currentVisits)
@@ -195,15 +213,20 @@ class MapFragment : Fragment() {
         return true
     }
 
-    fun setPointsOnMap(points: List<Point>){
+    fun setPointsOnMap(items: List<Pair<Point, Any>>){
         mapView.map.mapObjects.clear()
-        points.onEach {
-            mapView.map.mapObjects.addPlacemark(it)
+        val imageProvider = ImageProvider.fromResource(requireContext(), R.drawable.ic_location_small)
+        items.onEach { item ->
+            mapView.map.mapObjects.addPlacemark(item.first, imageProvider).apply {
+                addTapListener(markerTapListener)
+                geometry = item.first
+                userData = item.second
+            }
         }
         //TODO(Обработать нажатие на точку)
         if(mapView.height != 0)
             mapView.mapWindow.focusRect = getScreenRect()
-        val boundingBox = getBoundingBoxForPosition(points)
+        val boundingBox = getBoundingBoxForPosition(points.map { it.first })
         val cameraPosition = mapView.map.cameraPosition(boundingBox, 0f, 0f, null)
         mapView.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.2f), null)
     }
