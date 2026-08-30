@@ -35,6 +35,11 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it?.toModel() }
     }
 
+    override fun getVisitBeforeDate(status: List<String>, month: Int, year: Int): Flow<List<Visit>> {
+        return dao.getVisitBeforeDate(status, month, year)
+            .map { it.map { it.toModel() } }
+    }
+
     override suspend fun deleteVisit(visit: Visit) {
         dao.deleteVisit(visit.toEntity())
     }

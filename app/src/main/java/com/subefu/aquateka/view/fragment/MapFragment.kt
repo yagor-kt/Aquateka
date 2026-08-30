@@ -126,9 +126,39 @@ class MapFragment : Fragment() {
             emptyList(),
             requireContext(),
             childFragmentManager
-        )
+        ){ visitWithClient, mode ->
+            if (mode == MyConst.APPROVE) {
+                sharedViewModel.postponeVisit(null, mode, visitWithClient.visit)
+                return@getInstance
+            }
+            else if (mode == MyConst.MANUAL_POSTPONE) {
+                selectPostponeMonth{ date ->
+                    sharedViewModel.postponeVisit(
+                        if (mode == MyConst.MANUAL_POSTPONE)
+                            date
+                        else null,
+                        mode,
+                        visitWithClient.visit,
+                    )
+                }
+            }
+        }
 
         binding.rvOrders.adapter = rvAdapter
+    }
+
+    fun selectPostponeMonth(
+        dateSetListener: (Pair<Int, Int>) -> Unit
+    ){
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+            val date = Pair(selectedMonth + 1, selectedYear)
+            dateSetListener(date)
+        }, year, month, day).show()
     }
 
     fun setupChips(){

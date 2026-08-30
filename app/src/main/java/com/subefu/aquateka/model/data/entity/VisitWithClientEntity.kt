@@ -6,8 +6,8 @@ import androidx.room.Relation
 data class VisitWithClientEntity(
     @Embedded val visit: VisitEntity,
     @Relation(
-        parentColumn = "clientId",
-        entityColumn = "clientId"
+        parentColumn = "client_id",
+        entityColumn = "client_id"
     )
-    val client: ClientEntity
+    val client: ClientEntity,
 )

@@ -1,8 +1,10 @@
 package com.subefu.aquateka.view.adapter
 
 import android.content.res.ColorStateList
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -11,6 +13,9 @@ import com.subefu.aquateka.databinding.CardOrderLayoutBinding
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.utils.VisitDiffCallback
+import java.text.DateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class VisitCardAdapter(
     var orders: List<VisitWithClient>,
@@ -26,6 +31,7 @@ class VisitCardAdapter(
         return OrdersCardViewHolder(binding)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: OrdersCardViewHolder, position: Int) {
 //        Log.d("MyAdapter", "bind")
         holder.bind(orders[position])
@@ -58,10 +64,15 @@ class VisitCardAdapter(
                 true
             }
         }
+        @RequiresApi(Build.VERSION_CODES.O)
         fun bind(item: VisitWithClient) {
             binding.apply {
                 tvName.text = item.client.name
-                tvDate.text = if(item.visit.actual_date == 0) "——" else item.visit.actual_date.toString()
+                tvDate.text =
+                    if(item.visit.actual_date == 0)
+                        "——"
+                    else
+                        LocalDate.ofEpochDay(item.visit.actual_date.toLong()).format(DateTimeFormatter.ofPattern("dd.MM.yy"))
                 tvPhone.text = item.client.phone
                 tvPrice.text = "${item.visit.price}₽"
 
@@ -69,6 +80,7 @@ class VisitCardAdapter(
                     MyConst.COMPLETED -> MyConst.SHORT_COMPLETED
                     MyConst.POSTPONED -> MyConst.SHORT_POSTPONED
                     MyConst.PLANNED -> MyConst.SHORT_PLANNED
+                    MyConst.RESCHEDULE_FROM_PAST -> MyConst.SHORT_RESCHEDULE_FROM_PAST
                     MyConst.COMPLETED -> MyConst.SHORT_COMPLETED
                     else -> ""
                 }
@@ -78,6 +90,8 @@ class VisitCardAdapter(
                 ivStatusColor.imageTintList = when(item.visit.status){
                     MyConst.COMPLETED -> getColor(R.color.green)
                     MyConst.POSTPONED -> getColor(R.color.blue)
+                    MyConst.POSTPONED -> getColor(R.color.blue)
+                    MyConst.RESCHEDULE_FROM_PAST -> getColor(R.color.magenta)
                     MyConst.PLANNED -> getColor(R.color.orange)
                     else -> getColor(R.color.dark_surface)
                 }

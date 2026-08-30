@@ -27,6 +27,7 @@ import com.subefu.aquateka.databinding.FragmentOrdersBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
@@ -41,6 +42,8 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.collections.mutableListOf
+
 @RequiresApi(Build.VERSION_CODES.O)
 class VisitsFragment : Fragment() {
     private var _binding: FragmentOrdersBinding? = null
@@ -55,6 +58,8 @@ class VisitsFragment : Fragment() {
     private lateinit var rvAdapter: VisitCardAdapter
     private var currantDay = LocalDate.now()
     private var currentVisits = listOf<VisitWithClient>()
+
+    private var isPostponedOnDate = false
 
     private var csvTextToWrite = ""
     private val createCsvLauncher = registerForActivityResult(
@@ -88,6 +93,21 @@ class VisitsFragment : Fragment() {
                 updateShortInfo(visits)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        sharedViewModel.unapprovedVisits
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach { visitsPayload ->
+                Log.d("MyVisitsF", "unapproved visits: $visitsPayload")
+                if (visitsPayload?.visits.isNullOrEmpty().not()) {
+                    if(isPostponedOnDate)
+                        Log.d("MyVisitF", "ложное срабатывание переноса")
+                    else{
+                        isPostponedOnDate = true
+                        askPostponeUnapprovedVisit(visitsPayload.visits)
+                    }
+                }
+            }
+            .launchIn(lifecycleScope)
 
         binding.fabAddOrder.setOnClickListener {
             val intent = Intent(requireContext(), CreateVisitActivity::class.java)
@@ -129,11 +149,40 @@ class VisitsFragment : Fragment() {
             emptyList(),
             requireContext(),
             childFragmentManager,
-        )
+        ){ visitWithClient, mode ->
+            if (mode == MyConst.APPROVE) {
+                sharedViewModel.postponeVisit(null, mode, visitWithClient.visit)
+                return@getInstance
+            }
+            else if (mode == MyConst.MANUAL_POSTPONE) {
+                selectPostponeMonth{ date ->
+                    sharedViewModel.postponeVisit(
+                        if (mode == MyConst.MANUAL_POSTPONE)
+                            date
+                        else null,
+                        mode,
+                        visitWithClient.visit,
+                    )
+                }
+            }
+        }
 
         binding.rvOrders.apply{
             adapter = rvAdapter
         }
+    }
+
+    fun selectPostponeMonth(
+        dateSetListener: (Pair<Int, Int>) -> Unit
+    ){
+        val year = currantDay.year
+        val month = currantDay.monthValue
+        val day = currantDay.dayOfMonth
+
+        DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+            val date = Pair(selectedMonth + 1, selectedYear)
+            dateSetListener(date)
+        }, year, month-1, day).show()
     }
 
     fun setupExportImport(){
@@ -161,32 +210,47 @@ class VisitsFragment : Fragment() {
         }
 
         binding.dateContainer.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            val year = currantDay.year
+            val month = currantDay.monthValue
+            val day = currantDay.dayOfMonth
 
             DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
                 Log.d("MyVisits", "$selectedYear,$selectedMonth,$selectedDay")
-                sharedViewModel.setCurrentDate(selectedMonth+1, selectedYear)
                 currantDay = LocalDate.of(selectedYear, selectedMonth+1, selectedDay)
                 updateMonthInfo(currantDay)
-            }, year, month, day).show()
+            }, year, month-1, day).show()
         }
+    }
+
+    fun askPostponeUnapprovedVisit(unapprovedVisits: List<Visit>){
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Перенести невыполненные визиты?")
+            .setMessage("Найдено \"${unapprovedVisits.size}\" неперенесенных визитов. Выполнить автоперенос на текущий месяц?")
+            .setPositiveButton("Да") { witch, _ ->
+                Log.d("MyVisit", "selected auto postpone visits")
+                sharedViewModel.postponeVisit(null, MyConst.AUTOMATIC_POSTPONE, *unapprovedVisits.toTypedArray())
+                witch.cancel()
+            }
+            .setNeutralButton("Нет") { witch, _ ->
+                witch.cancel()
+            }
+        dialog.show()
     }
 
     //обновляем поля и запрашиваем новый месяц через view model
     fun updateMonthInfo(date: LocalDate){
+        if (date == currentVisits) return
         binding.tvMonth.text = date.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
         binding.tvYear.text = date.year.toString()
 
+        isPostponedOnDate = false
         sharedViewModel.setCurrentDate(date.monthValue, date.year)
     }
 
     fun updateShortInfo(visits: List<VisitWithClient>){
         val all = visits.size
         val completed = visits.filter { it.visit.status == MyConst.COMPLETED }.size
-        val moved = visits.filter { it.visit.status == MyConst.POSTPONED }.size
+        val moved = visits.filter { it.visit.status == MyConst.RESCHEDULE_FROM_PAST }.size
 
         binding.apply {
             tvAll.text = "Всего: $all"
@@ -217,11 +281,6 @@ class VisitsFragment : Fragment() {
         } catch (e: Exception) {
             Toast.makeText(context, "Ошибка сохранения: ${e.message}", Toast.LENGTH_LONG).show()
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        updateMonthInfo(currantDay)
     }
 
     override fun onDestroyView() {

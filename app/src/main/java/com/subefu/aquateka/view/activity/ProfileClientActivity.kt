@@ -1,8 +1,10 @@
 package com.subefu.aquateka.view.activity
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
+import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -29,6 +31,8 @@ import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
+import com.subefu.aquateka.viewmodel.MainViewModel
+import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -48,6 +52,12 @@ class ProfileClientActivity : AppCompatActivity() {
         val dataBase = DataBase.getDB(applicationContext)
         val repository = RepositoryImpl(dataBase.getDao())
         EditItemViewModelFactory(repository)
+    }
+
+    private val sharedViewModel: MainViewModel by viewModels{
+        val dataBase = DataBase.getDB(applicationContext)
+        val repository = RepositoryImpl(dataBase.getDao())
+        MainViewModelFactory(repository)
     }
 
     private var messageSubscriptionJob: Job? = null
@@ -142,11 +152,41 @@ class ProfileClientActivity : AppCompatActivity() {
             visits,
             this,
             supportFragmentManager
-        )
+        ){ visitWithClient, mode ->
+            if (mode == MyConst.APPROVE) {
+                sharedViewModel.postponeVisit(null, mode, visitWithClient.visit)
+                return@getInstance
+            }
+            else if (mode == MyConst.MANUAL_POSTPONE) {
+                selectPostponeMonth{ date ->
+                    sharedViewModel.postponeVisit(
+                        if (mode == MyConst.MANUAL_POSTPONE)
+                            date
+                        else null,
+                        mode,
+                        visitWithClient.visit,
+                    )
+                }
+            }
+        }
 
         binding.rvVisits.apply{
             adapter = rvAdapter
         }
+    }
+
+    fun selectPostponeMonth(
+        dateSetListener: (Pair<Int, Int>) -> Unit
+    ){
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(this, 0, {_,selectedYear,selectedMonth,selectedDay ->
+            val date = Pair(selectedMonth + 1, selectedYear)
+            dateSetListener(date)
+        }, year, month, day).show()
     }
 
     fun getDeleteClientDialog(): AlertDialog.Builder{

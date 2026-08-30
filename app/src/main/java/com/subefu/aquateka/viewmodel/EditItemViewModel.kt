@@ -12,7 +12,9 @@ import com.subefu.aquateka.model.data.repository.AddressRepository
 import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
+import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
+import com.subefu.aquateka.model.domain.usecase.PostponeVisitUseCase
 import com.subefu.aquateka.model.domain.usecase.SetAddressClientUseCase
 import com.subefu.aquateka.model.domain.usecase.SetAddressVisitUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -229,12 +231,16 @@ class EditItemViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(EditItemViewModel::class.java)){
 
-
             val setAddressVisitUseCase = SetAddressVisitUseCase(repository, App.addressRepository)
             val setAddressClientUseCase = SetAddressClientUseCase(repository, App.addressRepository)
 
+
             @Suppress("UNCHECKED_CAST")
-            return EditItemViewModel(repository, setAddressVisitUseCase, setAddressClientUseCase) as T
+            return EditItemViewModel(
+                repository,
+                setAddressVisitUseCase,
+                setAddressClientUseCase,
+                ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

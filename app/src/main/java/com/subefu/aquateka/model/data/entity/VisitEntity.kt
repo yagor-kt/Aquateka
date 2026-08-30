@@ -8,12 +8,12 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "Visit",
-    indices = [Index(value = ["id", "clientId"])],
+    indices = [Index(value = ["id", "client_id"])],
     foreignKeys = [
         ForeignKey(
             entity = ClientEntity::class,
-            parentColumns = ["clientId"],
-            childColumns = ["clientId"],
+            parentColumns = ["client_id"],
+            childColumns = ["client_id"],
             onDelete = ForeignKey.CASCADE,
             onUpdate = ForeignKey.CASCADE,
         )
@@ -22,15 +22,19 @@ import androidx.room.PrimaryKey
 data class VisitEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int?,
-    @ColumnInfo(index = true)
+    @ColumnInfo(index = true, name = "client_id")
     val clientId: Int,
     val address: String?,
     val latitude: Double,
     val longitude: Double,
+    @ColumnInfo(name = "planned_month")
     val plannedMonth: Int,
+    @ColumnInfo(name = "planned_year")
     val plannedYear: Int,
+    @ColumnInfo(name = "actual_date")
     val actualDate: Int,
     val status: String,
+    @ColumnInfo(name = "work_type")
     val workType: String,
     val price: Int,
     val parts: String,

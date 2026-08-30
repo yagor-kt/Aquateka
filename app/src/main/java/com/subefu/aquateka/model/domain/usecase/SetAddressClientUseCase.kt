@@ -1,6 +1,7 @@
 package com.subefu.aquateka.model.domain.usecase
 
 import android.util.Log
+import com.subefu.aquateka.App
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AddressRepository
 import com.subefu.aquateka.model.data.repository.AppEventBus
@@ -16,7 +17,6 @@ class SetAddressClientUseCase(
     private var addressRepository: AddressRepository
 ) {
     // Используем Scope на базе Dispatchers.Main.immediate для работы с Яндексом
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     fun execute(client: Client) {
         Log.d("MyUseCaseClient", "поиск адреса клиента(${client.hashCode()})...")
@@ -26,7 +26,7 @@ class SetAddressClientUseCase(
 
             // Этот блок кода выполнится ТОЛЬКО тогда, когда Яндекс вернет ответ.
             // Даже если это произойдет через 5 минут или при следующем открытии приложения!
-            applicationScope.launch {
+            App.applicationScope.launch(Dispatchers.Main.immediate) {
                 try {
                     val finalAddress = address ?: "-"
                     Log.d("MyUseCaseClient", "Колбэк сработал. Адрес: $finalAddress. Запись в БД...")
