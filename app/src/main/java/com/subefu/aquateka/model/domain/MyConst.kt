@@ -3,12 +3,13 @@ package com.subefu.aquateka.model.domain
 abstract class MyConst{
     companion object{
         val PLANNED = "Запланирован"
-        val POSTPONED = "Перенесен"
+        val POSTPONED = "Отложен"
+        val RESCHEDULE_FROM_PAST = "Перенесен"
         val COMPLETED = "Завершен"
-        val CANCELLED = "Отменен"
 
         val SHORT_PLANNED = "План"
         val SHORT_POSTPONED = "Перен."
+        val SHORT_RESCHEDULE_FROM_PAST = "Перен."
         val SHORT_COMPLETED = "Завер."
         val SHORT_CANCELLED = "Отмен."
 
@@ -17,6 +18,10 @@ abstract class MyConst{
         val VISIT_WITH_CLIENT = "VISIT_WITH_CLIENT"
         val CREATE = "CREATE"
         val TYPE = "TYPE"
+
+        val APPROVE = "APPROVE"
+        val MANUAL_POSTPONE = "MANUAL"
+        val AUTOMATIC_POSTPONE = "AUTOMATIC_POSTPONE"
 
         val MANDATORY_FIELD = "Это поле обязательно для заполнения"
         val BAD_COORDINATE = "Формат координат неверен"

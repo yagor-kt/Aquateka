@@ -12,6 +12,8 @@ interface Repository {
     fun getVisitByClient(clientId: Int): Flow<List<Visit>>
     fun getClientById(id: Int): Flow<Client?>
 
+    fun getVisitBeforeDate(status: List<String>, month: Int, year: Int): Flow<List<Visit>>
+
     suspend fun insertVisit(visit: Visit): Int
     suspend fun insertClient(client: Client): Int
 

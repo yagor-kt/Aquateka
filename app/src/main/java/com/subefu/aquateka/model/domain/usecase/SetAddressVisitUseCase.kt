@@ -16,9 +16,6 @@ class SetAddressVisitUseCase(
     private val repository: Repository,
     private var addressRepository: AddressRepository
 ) {
-    // Используем Scope на базе Dispatchers.Main.immediate для работы с Яндексом
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
     fun execute(visit: Visit) {
         Log.d("MyUseCaseVisit", "поиск адреса визита(${visit.hashCode()})...")
 
@@ -26,7 +23,7 @@ class SetAddressVisitUseCase(
 
             // Этот блок кода выполнится ТОЛЬКО тогда, когда Яндекс вернет ответ.
             // Даже если это произойдет через 5 минут или при следующем открытии приложения!
-            applicationScope.launch {
+            App.applicationScope.launch(Dispatchers.Main.immediate) {
                 try {
                     val finalAddress = address ?: "-"
                     Log.d("MyUseCaseVisit", "Колбэк сработал. Адрес: $finalAddress. Запись в БД...")

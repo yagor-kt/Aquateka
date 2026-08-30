@@ -9,7 +9,7 @@ import com.subefu.aquateka.model.domain.model.VisitWithClient
 
 fun VisitWithClientEntity.toModel() = VisitWithClient(
     this.visit.toModel(),
-    this.client.toModel()
+    this.client!!.toModel()
 )
 
 fun VisitEntity.toModel()

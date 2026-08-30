@@ -10,17 +10,23 @@ import androidx.room.Upsert
 import com.subefu.aquateka.model.data.entity.ClientEntity
 import com.subefu.aquateka.model.data.entity.VisitEntity
 import com.subefu.aquateka.model.data.entity.VisitWithClientEntity
+import com.subefu.aquateka.model.domain.model.Visit
 import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface DAO {
     //Visits
-    @Query("Select * from visit where plannedMonth = :month and plannedYear = :year")
+    @Query("Select * from visit where planned_month = :month and planned_year = :year order by status desc")
     fun getVisitsWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClientEntity>>
 
-    @Query("Select * from visit where clientId = :clientId order by plannedYear, plannedMonth")
+    @Query("Select * from visit where client_id = :clientId order by planned_year desc, planned_month desc")
     fun getVisitsByClientId(clientId: Int): Flow<List<VisitEntity>>
+
+    @Query("""
+        Select * from visit v where v.status in (:status) and (v.planned_year < :year or v.planned_year = :year and v.planned_month < :month)
+    """)
+    fun getVisitBeforeDate(status: List<String>, month: Int, year: Int): Flow<List<VisitEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun createVisit(visit: VisitEntity): Long
@@ -35,7 +41,7 @@ interface DAO {
     @Query("Select * from client")
     fun getClients(): Flow<List<ClientEntity>>
 
-    @Query("select * from client where clientId = :id")
+    @Query("select * from client where client_id = :id")
     fun getClientById(id: Int): Flow<ClientEntity?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

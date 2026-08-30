@@ -16,6 +16,7 @@ class App : Application() {
     companion object{
         lateinit var repository : Repository
         lateinit var addressRepository: AddressRepository
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     }
 
     override fun onCreate() {

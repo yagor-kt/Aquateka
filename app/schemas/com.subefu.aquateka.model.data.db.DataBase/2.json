@@ -2,17 +2,16 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "03c5aa3c8ca0e639a7d708e931dc2afd",
+    "identityHash": "59231554d34e3b1fd02a81911df72589",
     "entities": [
       {
         "tableName": "Client",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clientId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `phone` TEXT NOT NULL, `address` TEXT, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `periodMonth` INTEGER, `comment` TEXT NOT NULL, `createAt` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`client_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `phone` TEXT NOT NULL, `address` TEXT, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `period_month` INTEGER, `comment` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "clientId",
-            "columnName": "clientId",
-            "affinity": "INTEGER",
-            "notNull": true
+            "columnName": "client_id",
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "name",
@@ -45,7 +44,7 @@
           },
           {
             "fieldPath": "periodMonth",
-            "columnName": "periodMonth",
+            "columnName": "period_month",
             "affinity": "INTEGER"
           },
           {
@@ -53,51 +52,73 @@
             "columnName": "comment",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "createAt",
-            "columnName": "createAt",
-            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "clientId"
+            "client_id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_Client_client_id",
+            "unique": false,
+            "columnNames": [
+              "client_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Client_client_id` ON `${TABLE_NAME}` (`client_id`)"
+          }
+        ]
       },
       {
         "tableName": "Visit",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `clientId` INTEGER NOT NULL, `plannedMonth` INTEGER NOT NULL, `plannedYear` INTEGER NOT NULL, `actualDate` INTEGER NOT NULL, `status` TEXT NOT NULL, `workType` TEXT NOT NULL, `price` INTEGER NOT NULL, `parts` TEXT NOT NULL, `period` INTEGER NOT NULL, `comment` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`clientId`) REFERENCES `Client`(`clientId`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `client_id` INTEGER NOT NULL, `address` TEXT, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `planned_month` INTEGER NOT NULL, `planned_year` INTEGER NOT NULL, `actual_date` INTEGER NOT NULL, `status` TEXT NOT NULL, `work_type` TEXT NOT NULL, `price` INTEGER NOT NULL, `parts` TEXT NOT NULL, `period` INTEGER NOT NULL, `comment` TEXT NOT NULL, FOREIGN KEY(`client_id`) REFERENCES `Client`(`client_id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "clientId",
+            "columnName": "client_id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "clientId",
-            "columnName": "clientId",
-            "affinity": "INTEGER",
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "plannedMonth",
-            "columnName": "plannedMonth",
+            "columnName": "planned_month",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "plannedYear",
-            "columnName": "plannedYear",
+            "columnName": "planned_year",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "actualDate",
-            "columnName": "actualDate",
+            "columnName": "actual_date",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -109,7 +130,7 @@
           },
           {
             "fieldPath": "workType",
-            "columnName": "workType",
+            "columnName": "work_type",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -136,18 +157,6 @@
             "columnName": "comment",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
-            "affinity": "INTEGER",
-            "notNull": true
           }
         ],
         "primaryKey": {
@@ -158,13 +167,23 @@
         },
         "indices": [
           {
-            "name": "index_Visit_clientId",
+            "name": "index_Visit_id_client_id",
             "unique": false,
             "columnNames": [
-              "clientId"
+              "id",
+              "client_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Visit_clientId` ON `${TABLE_NAME}` (`clientId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Visit_id_client_id` ON `${TABLE_NAME}` (`id`, `client_id`)"
+          },
+          {
+            "name": "index_Visit_client_id",
+            "unique": false,
+            "columnNames": [
+              "client_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Visit_client_id` ON `${TABLE_NAME}` (`client_id`)"
           }
         ],
         "foreignKeys": [
@@ -173,10 +192,10 @@
             "onDelete": "CASCADE",
             "onUpdate": "CASCADE",
             "columns": [
-              "clientId"
+              "client_id"
             ],
             "referencedColumns": [
-              "clientId"
+              "client_id"
             ]
           }
         ]
@@ -184,7 +203,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '03c5aa3c8ca0e639a7d708e931dc2afd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59231554d34e3b1fd02a81911df72589')"
     ]
   }
 }

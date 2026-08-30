@@ -27,6 +27,7 @@ import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.activity.ProfileClientActivity
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
+import java.text.DateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -75,7 +76,7 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
 
         binding.tvCustomerInfo.setOnClickListener {
             val intent = Intent(requireContext(), ProfileClientActivity::class.java)
-            intent.putExtra(MyConst.CLIENT, client)
+            intent.putExtra(MyConst.CLIENT_ID, client.clietn_id)
             startActivity(intent)
         }
 
@@ -94,9 +95,7 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
         val nextVisit = getNextDate()
 
         val actualDate = if(visit.actual_date != 0){
-            Instant.ofEpochMilli(visit.actual_date.toLong())
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate().format(formatter)
+            LocalDate.ofEpochDay(visit.actual_date.toLong()).format(formatter)
         }
         else "[не выполнен]"
 
@@ -110,6 +109,7 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
             ivStatusColor.imageTintList = when(visit.status){
                 MyConst.COMPLETED -> ContextCompat.getColorStateList(requireContext(), R.color.green)
                 MyConst.POSTPONED -> ContextCompat.getColorStateList(requireContext(), R.color.blue)
+                MyConst.RESCHEDULE_FROM_PAST -> ContextCompat.getColorStateList(requireContext(), R.color.magenta)
                 MyConst.PLANNED -> ContextCompat.getColorStateList(requireContext(), R.color.orange)
                 else -> ContextCompat.getColorStateList(requireContext(), R.color.dark_surface)
             }
