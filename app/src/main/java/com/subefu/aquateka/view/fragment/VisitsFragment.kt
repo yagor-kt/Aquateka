@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.widget.doOnTextChanged
@@ -23,26 +21,27 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.FragmentOrdersBinding
-import com.subefu.aquateka.model.data.db.DataBase
-import com.subefu.aquateka.model.data.repository.RepositoryImpl
+import com.subefu.aquateka.model.data.db.utill.AppMessage
+import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
+import com.subefu.aquateka.model.domain.utill.ImportExportState
 import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
+import com.subefu.aquateka.viewmodel.EditItemViewModel
+import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlin.collections.mutableListOf
 
 @RequiresApi(Build.VERSION_CODES.O)
 class VisitsFragment : Fragment() {
@@ -50,9 +49,11 @@ class VisitsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val sharedViewModel: MainViewModel by activityViewModels {
-        val dataBase = DataBase.getDB(requireContext().applicationContext)
-        val repository = RepositoryImpl(dataBase.getDao())
-        MainViewModelFactory(repository)
+        MainViewModelFactory(App.repository)
+    }
+
+    private val viewModel: EditItemViewModel by activityViewModels {
+        EditItemViewModelFactory(App.repository)
     }
 
     private lateinit var rvAdapter: VisitCardAdapter
@@ -66,6 +67,11 @@ class VisitsFragment : Fragment() {
         ActivityResultContracts.CreateDocument("text/comma-separated-values")
     ) { uri ->
         uri?.let { saveCsvToUri(it, csvTextToWrite) }
+    }
+    private val importCsvLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { importCsvFromUri(it) }
     }
 
     override fun onCreateView(
@@ -109,11 +115,47 @@ class VisitsFragment : Fragment() {
             }
             .launchIn(lifecycleScope)
 
+        sharedViewModel.importState
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .filterNotNull()
+            .onEach { state ->
+                when(state){
+                    is ImportExportState.SuccessImportVisits -> {
+                        importVisits(state.visits)
+                    }
+                    is ImportExportState.SuccessExportVisits -> {
+                        exportVisits(state.cvs)
+                    }
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+
         binding.fabAddOrder.setOnClickListener {
             val intent = Intent(requireContext(), CreateVisitActivity::class.java)
             intent.putExtra(MyConst.TYPE, MyConst.CREATE)
             startActivity(intent)
         }
+    }
+
+    fun importVisits(visits: List<Visit>){
+        if (visits.isNotEmpty()) {
+            viewModel.insertVisits(visits)
+            sharedViewModel.resetImportState()
+            AppEventBus.post(AppMessage.Success("Импортировано ${visits.size} записей визитов"))
+        } else {
+            AppEventBus.post(AppMessage.Error("Нет данных для импорта"))
+        }
+        binding.imImport.isClickable = true
+    }
+
+    fun exportVisits(csvContent: String){
+        Log.d("MyVisitF", "csv: $csvContent")
+        csvTextToWrite = csvContent
+        val month = binding.tvMonth.text.toString()
+        val year = binding.tvYear.text.toString()
+        createCsvLauncher.launch("visits_${month}_${year}.csv")
+        sharedViewModel.resetImportState()
+        binding.imExport.isClickable = true
     }
 
 
@@ -186,15 +228,14 @@ class VisitsFragment : Fragment() {
     }
 
     fun setupExportImport(){
-        //TODO("сделать экспорт/импорт")
         binding.imExport.setOnClickListener {
-            val month = binding.tvMonth.text.toString()
-            val year = binding.tvYear.text.toString()
-            exportVisitsToCsv(month, year)
+            binding.imExport.isClickable = false
+            val visits = currentVisits
+            sharedViewModel.generateCsvData(visits)
         }
         binding.imImport.setOnClickListener {
-            Toast.makeText(requireContext(), "Импорт в разработке", Toast.LENGTH_SHORT).show()
-            //TODO(Сделать импорт заказов по текущему месяцу)
+            binding.imImport.isClickable = false
+            importCsvLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
         }
     }
 
@@ -259,28 +300,37 @@ class VisitsFragment : Fragment() {
         }
     }
 
-    fun exportVisitsToCsv(month: String, year: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val visits = currentVisits
-            val csvContent = sharedViewModel.generateCsvData(visits)
-
-            withContext(Dispatchers.Main) {
-                csvTextToWrite = csvContent
-                // Открывает системное окно, где пользователь выберет папку "Загрузки" и введет имя файла
-                createCsvLauncher.launch("visits_${month}_${year}.csv")
-            }
-        }
-    }
-
     fun saveCsvToUri(uri: Uri, content: String) {
-        try {
+        if (!isAdded) return // Защита от утечки памяти, если пользователь закрыл экран
+        runCatching {
             requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(content.toByteArray(Charsets.UTF_8))
-                Toast.makeText(context, "Файл успешно сохранен!", Toast.LENGTH_LONG).show()
             }
-        } catch (e: Exception) {
-            Toast.makeText(context, "Ошибка сохранения: ${e.message}", Toast.LENGTH_LONG).show()
+            AppEventBus.post(AppMessage.Success("Файл успешно сохранен!"))
         }
+            .onFailure { e ->
+                AppEventBus.post(AppMessage.Error("Ошибка сохранения: ${e.message}"))
+            }
+    }
+
+    fun importCsvFromUri(uri: Uri) {
+        if (!isAdded) return
+        runCatching {
+            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                val csvContent = inputStream.bufferedReader(Charsets.UTF_8).readText()
+                sharedViewModel.parseCsvToVisits(csvContent)
+                AppEventBus.post(AppMessage.Success("Файл имортирован успешно"))
+            }
+        }
+            .onFailure { e ->
+                AppEventBus.post(AppMessage.Error("Ошибка импорта: ${e.message}"))
+            }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.imExport.isClickable = true
+        binding.imImport.isClickable = true
     }
 
     override fun onDestroyView() {

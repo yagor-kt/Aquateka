@@ -40,14 +40,24 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it.map { it.toModel() } }
     }
 
+
+    override fun insertVisits(visits: List<Visit>) {
+        dao.insertVisits(visits.map { it.toEntity() })
+    }
+    override fun insertClients(clients: List<Client>) {
+        dao.insertClients(clients.map { it.toEntity() })
+    }
+
+    override suspend fun getVisitsByClientIds(clientIds: List<Int>): List<VisitWithClient> {
+        return dao.getVisitsByClientIds(clientIds).map { it.toModel() }
+    }
+
     override suspend fun deleteVisit(visit: Visit) {
         dao.deleteVisit(visit.toEntity())
     }
-
     override suspend fun updateVisit(visit: Visit) {
         dao.updateVisit(visit.toEntity())
     }
-
     override suspend fun insertVisit(visit: Visit): Int {
         return dao.createVisit(visit.toEntity()).toInt()
     }
@@ -56,12 +66,10 @@ class RepositoryImpl(val dao: DAO): Repository {
     override suspend fun deleteClient(client: Client) {
         dao.deleteClient(client.toEntity())
     }
-
     override suspend fun updateClient(client: Client) {
         dao.updateClient(client.toEntity())
         Log.d("MYRepImpl", "update client: $client")
     }
-
     override suspend fun insertClient(client: Client): Int {
         return dao.createClient(client.toEntity()).toInt()
     }

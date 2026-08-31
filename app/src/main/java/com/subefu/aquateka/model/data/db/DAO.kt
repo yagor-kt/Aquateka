@@ -23,6 +23,14 @@ interface DAO {
     @Query("Select * from visit where client_id = :clientId order by planned_year desc, planned_month desc")
     fun getVisitsByClientId(clientId: Int): Flow<List<VisitEntity>>
 
+    @Query("Select * from visit where client_id in(:clientIds)")
+    fun getVisitsByClientIds(clientIds: List<Int>): List<VisitWithClientEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertClients(clients: List<ClientEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertVisits(visits: List<VisitEntity>)
+
     @Query("""
         Select * from visit v where v.status in (:status) and (v.planned_year < :year or v.planned_year = :year and v.planned_month < :month)
     """)
