@@ -3,6 +3,7 @@ package com.subefu.aquateka.viewmodel
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.collection.intSetOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -17,10 +18,12 @@ import com.subefu.aquateka.model.domain.repository.Repository
 import com.subefu.aquateka.model.domain.usecase.PostponeVisitUseCase
 import com.subefu.aquateka.model.domain.usecase.SetAddressClientUseCase
 import com.subefu.aquateka.model.domain.usecase.SetAddressVisitUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -105,6 +108,31 @@ class EditItemViewModel(
                 if (e is CancellationException) throw e
                 Log.d("MyVmEdit", "ошибка в  #insertVisit {${e.message}}")
                 postEvent("Не удалось создать визит", true)
+            }
+        }
+    }
+
+    fun insertVisits(visits: List<Visit>){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.insertVisits(visits)
+                postEvent("Визиты импортированы", false)
+            }catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.d("MyVmEdit", "ошибка в  #insertVisit {${e.message}}")
+                postEvent("Не удалось создать визит", true)
+            }
+        }
+    }
+    fun insertClients(clients: List<Client>){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.insertClients(clients)
+                postEvent("Клиенты импортированы", false)
+            }catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.d("MyVmEdit", "some bag @EditItemViewModel #insertClient {${e.message}}")
+                postEvent("Не удалось создать клиента", true)
             }
         }
     }
