@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.subefu.aquateka"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -23,12 +23,15 @@ android {
 
         buildConfigField("String", "MAP_API_kEY", "\"${getMapApiKey()}\"")
 
-
+        ndk {
+            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a"))
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true     // Включает R8 (ProGuard) для удаления лишнего кода карт
+            isShrinkResources = true   // Удаляет неиспользуемые картинки и ресурсы
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
