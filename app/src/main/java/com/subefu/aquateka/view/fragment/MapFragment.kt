@@ -1,20 +1,13 @@
 package com.subefu.aquateka.view.fragment
 
-import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.Context
 import android.icu.util.Calendar
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.view.children
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -27,7 +20,6 @@ import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
-import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
@@ -35,7 +27,6 @@ import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import com.yandex.mapkit.Animation
-import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.geometry.BoundingBox
@@ -51,7 +42,6 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.getValue
 
-@RequiresApi(Build.VERSION_CODES.O)
 class MapFragment : Fragment() {
 
     private var _binding: FragmentMapBinding? = null
@@ -75,6 +65,8 @@ class MapFragment : Fragment() {
     private var points: List<Pair<Point, Any>> = emptyList()
     var isChangeMap = false
 
+    var currentPointGroup = "visits"
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -96,8 +88,7 @@ class MapFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { visits ->
                 Log.d("MyMap", "on each visits")
-                currentVisits = visits
-                updateVisits()
+                chooseCurrentMonthVisit(visits)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -105,8 +96,7 @@ class MapFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { clients ->
                 Log.d("MyMap", "on each clients")
-                currentClients = clients
-                updateClients()
+                chooseAllClient(clients)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -124,6 +114,116 @@ class MapFragment : Fragment() {
 
             true
         }
+    }
+
+    fun chooseCurrentMonthVisit(visits: List<VisitWithClient>){
+        currentVisits = visits
+        if (currentPointGroup != "visits") return
+         updateVisits()
+    }
+
+    fun chooseAllClient(clients: List<Client>){
+        currentClients = clients
+        if (currentPointGroup != "clients") return
+        updateClients()
+    }
+
+    fun updateClients(){
+        points = currentClients.map { client ->
+            Pair(
+                Point(client.latitude, client.longitude),
+                client
+            )
+        }
+        Log.d("MyMap", "points on update clients: $points")
+        updateShortInfo(currentClients)
+        setPointsOnMap(points)
+        rvAdapter.updateList(emptyList())
+    }
+
+    fun updateVisits(){
+        points = currentVisits.map { visitWithClient ->
+            Pair(
+                Point(visitWithClient.visit.latitude, visitWithClient.visit.longitude),
+                visitWithClient
+            )
+        }
+        Log.d("MyMap", "points on update visits: $points")
+        updateShortInfo(currentVisits)
+        setPointsOnMap(points)
+        rvAdapter.updateList(currentVisits)
+    }
+
+    fun setupChips(){
+        binding.chipGroupMap.setOnCheckedStateChangeListener { group, checkedIds ->
+            when(checkedIds.firstOrNull()){
+                binding.chipAllClient.id -> {
+                    currentPointGroup = "clients"
+                    selectedAllClients()
+                }
+                binding.chipCurrentMonth.id -> {
+                    currentPointGroup = "visits"
+                    selectedChipCurrentMonth()
+                }
+                binding.chipMonth.id -> {
+                    currentPointGroup = "visits"
+                    selectedMonth()
+                }
+            }
+        }
+
+        binding.chipMonth.setOnClickListener { view ->
+            if (isViewMonthSelection){
+                selectedMonth()
+            }
+        }
+    }
+
+    fun selectedChipCurrentMonth(){
+        isViewMonthSelection = false
+        sharedViewModel.setCurrentDateForMap(currantDay.monthValue, currantDay.year)
+        updateVisits()
+    }
+
+    fun selectedAllClients(){
+        isViewMonthSelection = false
+        updateClients()
+    }
+
+    fun selectedMonth(){
+        val calendar = Calendar.getInstance()
+
+        DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
+            sharedViewModel.setCurrentDateForMap(selectedMonth+1, selectedYear)
+            binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1)
+                .month
+                .getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+            isViewMonthSelection = true
+        },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    fun setPointsOnMap(items: List<Pair<Point, Any>>){
+        points = items
+        isChangeMap = false
+        Log.d("MyMap", "points set on map: $points")
+        mapView.map.mapObjects.clear()
+        val imageProvider = ImageProvider.fromResource(requireContext(), R.drawable.ic_location_small)
+        items.onEach { item ->
+            mapView.map.mapObjects.addPlacemark(item.first, imageProvider).apply {
+                addTapListener(markerTapListener)
+                geometry = item.first
+                userData = item.second
+            }
+        }
+        if(mapView.height != 0)
+            mapView.mapWindow.focusRect = getScreenRect()
+        val boundingBox = getBoundingBoxForPosition(points.map { it.first })
+        val cameraPosition = mapView.map.cameraPosition(boundingBox, 0f, 0f, null)
+        mapView.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.2f), null)
     }
 
     fun setupRecyclerView(){
@@ -158,82 +258,15 @@ class MapFragment : Fragment() {
 
     fun selectPostponeMonth(dateSetListener: (Pair<Int, Int>) -> Unit){
         val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
             val date = Pair(selectedMonth + 1, selectedYear)
             dateSetListener(date)
-        }, year, month, day).show()
-    }
-
-    fun setupChips(){
-        binding.chipGroupMap.setOnCheckedStateChangeListener { group, checkedIds ->
-            when(checkedIds.firstOrNull()){
-                binding.chipAllClient.id -> { selectedAllClients() }
-                binding.chipCurrentMonth.id -> { selectedCurrentMonth() }
-                binding.chipMonth.id -> { selectedMonth() }
-            }
-
-        }
-
-        binding.chipMonth.setOnClickListener { view ->
-            if (isViewMonthSelection){
-                selectedMonth()
-            }
-        }
-    }
-
-    fun selectedCurrentMonth(){
-        isViewMonthSelection = false
-        sharedViewModel.setCurrentDateForMap(currantDay.monthValue, currantDay.year)
-    }
-
-    fun selectedMonth(){
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        DatePickerDialog(requireContext(), 0, {_,selectedYear,selectedMonth,selectedDay ->
-            sharedViewModel.setCurrentDateForMap(selectedMonth+1, selectedYear)
-            binding.chipMonth.text = LocalDate.of(selectedYear, selectedMonth+1, 1)
-                .month
-                .getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
-            isViewMonthSelection = true
-        }, year, month, day).show()
-    }
-
-    fun selectedAllClients(){
-        isViewMonthSelection = false
-        updateClients()
-    }
-
-    fun updateClients(){
-        points = currentClients.map { client ->
-            Pair(
-                Point(client.latitude, client.longitude),
-                client
-            )
-        }
-        Log.d("MyMap", "points on update clients: $points")
-        updateShortInfo(currentClients)
-        setPointsOnMap(points)
-        rvAdapter.updateList(emptyList())
-    }
-
-    fun updateVisits(){
-        points = currentVisits.map { visitWithClient ->
-            Pair(
-                Point(visitWithClient.visit.latitude, visitWithClient.visit.longitude),
-                visitWithClient
-            )
-        }
-        Log.d("MyMap", "points on update visits: $points")
-        updateShortInfo(currentVisits)
-        setPointsOnMap(points)
-        rvAdapter.updateList(currentVisits)
+        },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     fun updateShortInfo(visits: List<VisitWithClient>){
@@ -253,26 +286,6 @@ class MapFragment : Fragment() {
             binding.tvActive.text = ""
         }
         return true
-    }
-
-    fun setPointsOnMap(items: List<Pair<Point, Any>>){
-        points = items
-        isChangeMap = false
-        Log.d("MyMap", "points set on map: $points")
-        mapView.map.mapObjects.clear()
-        val imageProvider = ImageProvider.fromResource(requireContext(), R.drawable.ic_location_small)
-        items.onEach { item ->
-            mapView.map.mapObjects.addPlacemark(item.first, imageProvider).apply {
-                addTapListener(markerTapListener)
-                geometry = item.first
-                userData = item.second
-            }
-        }
-        if(mapView.height != 0)
-            mapView.mapWindow.focusRect = getScreenRect()
-        val boundingBox = getBoundingBoxForPosition(points.map { it.first })
-        val cameraPosition = mapView.map.cameraPosition(boundingBox, 0f, 0f, null)
-        mapView.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.2f), null)
     }
 
     fun getScreenRect(): ScreenRect{
@@ -310,7 +323,7 @@ class MapFragment : Fragment() {
         super.onStart()
         mapView.onStart()
         Log.d("MyMap", "points on start: $points")
-        setPointsOnMap(points)
+        updateVisits()
         binding.chipGroupMap.check(binding.chipCurrentMonth.id)
     }
 

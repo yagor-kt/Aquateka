@@ -95,7 +95,6 @@ class MainViewModel(
         .flatMapLatest { date ->
             repository.getVisitWithClientForMonth(date.first, date.second)
         }
-        .distinctUntilChanged()
         .catch { e ->
             emit(emptyList())
             postEvent(("Ошибка загрузки визитов для карты: ${e.localizedMessage}"), true)
