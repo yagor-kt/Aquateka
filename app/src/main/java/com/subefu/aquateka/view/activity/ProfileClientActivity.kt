@@ -28,6 +28,7 @@ import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
+import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
 import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
@@ -42,7 +43,6 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.retryWhen
 import kotlin.getValue
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class ProfileClientActivity : AppCompatActivity() {
 
     private var _binding: ActivityProfileCustomerBinding? = null
@@ -135,12 +135,15 @@ class ProfileClientActivity : AppCompatActivity() {
 
     fun updateUserInfo(){
         val userInfo = """
+            |ID: ${currentClient.clietn_id}
             |ФИО: ${currentClient.name}
             |Телефон: ${currentClient.phone}
-            |Адрес: ${currentClient.address ?: "не указан"}
+            |
+            |Адрес: ${currentClient.address.getOrCap()}
             |Координаты: ${currentClient.latitude} / ${currentClient.longitude}
-            |Коментарий: ${currentClient.comment}
-            |Периодичность: ${currentClient.period_month ?: "не указана"}
+            |Периодичность: ${currentClient.period_month.getOrCap()}
+            |
+            |Коментарий: ${currentClient.comment.getOrCap()}
         """.trimMargin()
         binding.userInfo.text = userInfo.toString()
     }
@@ -172,6 +175,7 @@ class ProfileClientActivity : AppCompatActivity() {
 
         binding.rvVisits.apply{
             adapter = rvAdapter
+            addItemDecoration(TopBottomPaddingDecoration(10, 10))
         }
     }
 
@@ -217,4 +221,8 @@ class ProfileClientActivity : AppCompatActivity() {
                 startActivity(intent)
             }
     }
+
+    fun Any?.getOrCap(cup: String = "-") =
+        if (this.toString().isBlank()) cup
+        else this.toString()
 }

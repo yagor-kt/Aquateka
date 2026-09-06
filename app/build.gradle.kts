@@ -8,16 +8,32 @@ plugins {
     id("androidx.room") version "2.7.0"
 }
 
+val localProperties = Properties()
+val localFile = rootProject.file("local.properties")
+if (localFile.exists()) {
+    localProperties.load(localFile.inputStream())
+}
+
 android {
     namespace = "com.subefu.aquateka"
     compileSdk = 36
+
+    signingConfigs {
+        create("customDebug") {
+            val props = localProperties
+            storeFile = file(props.getProperty("debug.storeFile", "key_store.jks"))
+            storePassword = props.getProperty("debug.storePassword", "3310S0209")
+            keyAlias = props.getProperty("debug.keyAlias", "key0")
+            keyPassword = props.getProperty("debug.keyPassword", "3310S0209")
+        }
+    }
 
     defaultConfig {
         applicationId = "com.subefu.aquateka"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -36,6 +52,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("customDebug")
         }
     }
     compileOptions {
@@ -73,6 +92,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.scenecore)
     ksp(libs.androidx.room.compiler)  // Используем ksp вместо kapt
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")

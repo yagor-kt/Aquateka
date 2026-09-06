@@ -6,11 +6,11 @@ import com.subefu.aquateka.model.domain.model.VisitWithClient
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
-    fun getVisitWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClient>>
     fun getClients(): Flow<List<Client>>
-
-    fun getVisitByClient(clientId: Int): Flow<List<Visit>>
     fun getClientById(id: Int): Flow<Client?>
+    fun getAllIDClients(): List<Int>
+    fun getVisitWithClientForMonth(month: Int, year: Int): Flow<List<VisitWithClient>>
+    fun getVisitByClient(clientId: Int): Flow<List<Visit>>
 
     fun getVisitBeforeDate(status: List<String>, month: Int, year: Int): Flow<List<Visit>>
 

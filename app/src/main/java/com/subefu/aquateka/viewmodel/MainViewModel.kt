@@ -180,6 +180,10 @@ class MainViewModel(
             if (lines.isEmpty()) return@launch
 
             // Пропускаем заголовок
+            if (!lines.first().contains("id;clientId;address;latitude;longitude;", true)) {
+                _importState.emit(ImportExportState.Error("Ошибка импорта визитов: некорректный формат"))
+                return@launch
+            }
             val dataLines = lines.drop(1).filter { it.isNotBlank() }
 
             for (line in dataLines) {
@@ -223,6 +227,10 @@ class MainViewModel(
             if (lines.isEmpty()) return@launch
 
             // Пропускаем заголовок
+            if (!lines.first().contains("clietn_id;name;phone;address;", true)) {
+                _importState.emit(ImportExportState.Error("Ошибка импорта клиентов: некорректный формат"))
+                return@launch
+            }
             val dataLines = lines.drop(1).filter { it.isNotBlank() }
 
             for (line in dataLines) {

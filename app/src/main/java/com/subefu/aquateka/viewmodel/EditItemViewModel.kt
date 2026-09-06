@@ -115,7 +115,10 @@ class EditItemViewModel(
     fun insertVisits(visits: List<Visit>){
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.insertVisits(visits)
+                val allIDClients = repository.getAllIDClients()
+                val validateVisits = visits.filter { it.clientId in allIDClients }
+                repository.insertVisits(validateVisits)
+                Log.d("MyEditVM", "insert visits: $visits")
                 postEvent("Визиты импортированы", false)
             }catch (e: Exception) {
                 if (e is CancellationException) throw e
