@@ -73,7 +73,7 @@ class VisitCardAdapter(
                         "——"
                     else
                         LocalDate.ofEpochDay(item.visit.actual_date.toLong()).format(DateTimeFormatter.ofPattern("dd.MM.yy"))
-                tvPhone.text = item.client.phone
+                tvPhone.text = item.client.phone.split(",").onEach { it -> it.trim() }.joinToString("\n")
                 tvPrice.text = "${item.visit.price}₽"
 
                 tvStatus.text = when(item.visit.status){

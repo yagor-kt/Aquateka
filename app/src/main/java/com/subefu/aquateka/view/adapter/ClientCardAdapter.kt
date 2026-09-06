@@ -47,7 +47,7 @@ class ClientCardAdapter(
                 tvName.text = client.name
                 tvAddress.text = client.address ?: "адрес не указан"
                 tvCoordinate.text = "${client.latitude}/${client.longitude}"
-                tvPhone.text = client.phone
+                tvPhone.text = client.phone.split(",").onEach { it.trim() }.joinToString("\n")
             }
         }
     }
