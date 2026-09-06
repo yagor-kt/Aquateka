@@ -149,8 +149,10 @@ class CreateClientActivity : AppCompatActivity() {
                 val longitude = binding.tfCoordinate.editText?.text!!.split(",")[1].toDouble()
             },
             checkValidateField(MyConst.BAD_PHONE) {
-                val phone = binding.tfPhone.editText?.text.toString()
-                if(phone.length != 11 || phone.toLongOrNull() == null) throw Exception()
+                val singlePhone = "(\\+7|7|8)??[\\s\\-]?\\(?[34589]\\d{2}\\)?[\\s\\-]?\\d{3}[\\s\\-]?\\d{2}[\\s\\-]?\\d{2}"
+                val listPattern = "^$singlePhone(\\s*,\\s*$singlePhone)*$"
+                val phone = binding.tfPhone.editText?.text.toString().trim()
+                if (Regex(listPattern).matches(phone).not()) throw Exception()
             }
         ).any{ it.not() }
     }
