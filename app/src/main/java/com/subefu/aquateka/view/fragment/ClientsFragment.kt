@@ -20,6 +20,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.FragmentCustomersBinding
 import com.subefu.aquateka.model.data.db.DataBase
@@ -43,6 +44,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import kotlin.getValue
+import com.subefu.aquateka.model.domain.utill.ImportExportState.*
+import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
 
 @RequiresApi(Build.VERSION_CODES.O)
 class ClientsFragment : Fragment() {
@@ -108,17 +111,20 @@ class ClientsFragment : Fragment() {
             .filterNotNull()
             .onEach { state ->
                 when(state){
-                    is ImportExportState.SuccessImportClients -> {
+                    is SuccessImportClients -> {
                         importClients(state.visits)
                     }
-                    is ImportExportState.SuccessExportClients -> {
+                    is SuccessImportVisits -> {
+                        importVisits(state.visits)
+                    }
+                    is SuccessExportClients -> {
                         exportClients(state.cvs)
                     }
-                    is ImportExportState.SuccessExportVisits -> {
+                    is SuccessExportVisits -> {
                         exportVisits(state.cvs)
                     }
-                    is ImportExportState.SuccessImportVisits -> {
-                        importVisits(state.visits)
+                    is Error -> {
+                        AppEventBus.post(AppMessage.Error(state.message))
                     }
                     else -> {}
                 }
@@ -190,14 +196,7 @@ class ClientsFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     fun setupUI(){
         //сброс фокуса строки поиска при клике за ее пределами
-        binding.main.setOnTouchListener { _, _ ->
-            if (binding.etSearch.hasFocus()) {
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
-                binding.main.requestFocus()
-            }
-            false
-        }
+        setResetFocus()
 
         binding.searchLayout.editText?.doOnTextChanged {text, _, _, _ ->
             val searchText = text.toString().trim()
@@ -222,6 +221,7 @@ class ClientsFragment : Fragment() {
         binding.rvCustomers.apply{
             adapter = rvAdapter
             Log.d("MyLog", this.size.toString())
+            addItemDecoration(TopBottomPaddingDecoration(10, 100))
         }
     }
 
@@ -272,6 +272,33 @@ class ClientsFragment : Fragment() {
         binding.apply {
             tvAll.text = "Всего: $all"
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun setResetFocus(){
+        val setMainFocus = {
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+            binding.main.requestFocus()
+        }
+
+        binding.main.setOnTouchListener { _, _ ->
+            if (binding.etSearch.hasFocus()) {
+                setMainFocus.invoke()
+            }
+            false
+        }
+
+        binding.rvCustomers.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                if(newState == RecyclerView.SCROLL_STATE_DRAGGING ) {
+                        setMainFocus.invoke()
+                    }
+                }
+            }
+        )
     }
 
     override fun onResume() {

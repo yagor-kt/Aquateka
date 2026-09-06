@@ -30,6 +30,10 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it.map { it.toModel() } }
     }
 
+    override fun getAllIDClients(): List<Int> {
+        return dao.getAllIDClients()
+    }
+
     override fun getClientById(id: Int): Flow<Client?> {
         return dao.getClientById(id)
             .map { it?.toModel() }

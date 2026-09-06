@@ -21,6 +21,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.FragmentOrdersBinding
 import com.subefu.aquateka.model.data.db.utill.AppMessage
@@ -31,6 +32,7 @@ import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.utill.ImportExportState
 import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
+import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
 import com.subefu.aquateka.view.utils.VisitCardAdapterFactory
 import com.subefu.aquateka.viewmodel.EditItemViewModel
 import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
@@ -161,6 +163,8 @@ class VisitsFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     fun setupUI(){
+        setResetFocus()
+
         updateMonthInfo(currantDay)
         updateShortInfo(currentVisits)
 
@@ -211,6 +215,7 @@ class VisitsFragment : Fragment() {
 
         binding.rvOrders.apply{
             adapter = rvAdapter
+            addItemDecoration(TopBottomPaddingDecoration(10, 10))
         }
     }
 
@@ -241,11 +246,11 @@ class VisitsFragment : Fragment() {
 
     fun setupDateChange(){
         //setup current date, edit date after change in layout
-        binding.imMonthPrevious.setOnClickListener {
+        binding.imMonthNext.setOnClickListener {
             currantDay = currantDay.plusMonths(1)
             updateMonthInfo(currantDay)
         }
-        binding.imMonthNext.setOnClickListener {
+        binding.imMonthPrevious.setOnClickListener {
             currantDay = currantDay.minusMonths(1)
             updateMonthInfo(currantDay)
         }
@@ -325,6 +330,33 @@ class VisitsFragment : Fragment() {
             .onFailure { e ->
                 AppEventBus.post(AppMessage.Error("Ошибка импорта: ${e.message}"))
             }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun setResetFocus(){
+        val setMainFocus = {
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+            binding.main.requestFocus()
+        }
+
+        binding.main.setOnTouchListener { _, _ ->
+            if (binding.etSearch.hasFocus()) {
+                setMainFocus.invoke()
+            }
+            false
+        }
+
+        binding.rvOrders.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                if(newState == RecyclerView.SCROLL_STATE_DRAGGING ) {
+                    setMainFocus.invoke()
+                }
+            }
+        }
+        )
     }
 
     override fun onResume() {

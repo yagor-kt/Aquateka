@@ -118,23 +118,28 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
 
     fun getClientInfo() =
         """
+            |ID: ${visit.id}
             |ФИО: ${client.name}
             |Телефон: ${client.phone}
+            |
+            |Адрес: ${visit.address.getOrCap()}
             |Координаты: ${visit.latitude} / ${visit.longitude}
-            |Адрес: ${visit.address ?: "нет"}
         """.trimMargin()
 
     fun getVisitInfo() =
         """
             |Цена: ${visit.price}
-            |Коментарий: ${visit.comment}
-            |Запчасти: ${visit.parts}
+            |Вид работы: ${visit.work_type.getOrCap()}
+            |Запчасти: ${visit.parts.getOrCap()}
+            |
+            |Коментарий: ${visit.comment.getOrCap()}
         """.trimMargin()
 
     fun getPeriodInfo(nextVisit: String) =
         """
             |Периодичность: ${visit.period}
             |Следующий визит: $nextVisit
+            |Запланированная дата визита: ${visit.planned_month}.${visit.planned_year}
         """.trimMargin()
 
     fun getNextDate() =
@@ -171,6 +176,8 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
                 this@VisitInfoFragment.dismiss()
             }
     }
+
+    fun String?.getOrCap(cup: String = "-") = if (this.isNullOrBlank()) cup else this
 
     override fun onDestroyView() {
         super.onDestroyView()

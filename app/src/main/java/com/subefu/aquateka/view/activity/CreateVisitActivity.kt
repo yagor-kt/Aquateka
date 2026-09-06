@@ -52,9 +52,10 @@ class CreateVisitActivity : AppCompatActivity() {
         enableEdgeToEdge()
         _binding = ActivityCreateOrderBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(binding.root.id)) { view, insets ->
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            view.setPadding(0, systemBars.top, 0, imeInsets.bottom)
             insets
         }
     }

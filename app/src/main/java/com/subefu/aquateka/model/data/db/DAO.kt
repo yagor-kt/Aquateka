@@ -26,9 +26,9 @@ interface DAO {
     @Query("Select * from visit where client_id in(:clientIds)")
     fun getVisitsByClientIds(clientIds: List<Int>): List<VisitWithClientEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertClients(clients: List<ClientEntity>)
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertVisits(visits: List<VisitEntity>)
 
     @Query("""
@@ -60,4 +60,7 @@ interface DAO {
 
     @Delete
     suspend fun deleteClient(client: ClientEntity)
+
+    @Query("Select client_id from client")
+    fun getAllIDClients(): List<Int>
 }

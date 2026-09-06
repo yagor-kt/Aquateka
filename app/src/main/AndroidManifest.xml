@@ -15,12 +15,14 @@
         tools:targetApi="31">
         <activity
             android:name=".view.activity.CreateVisitActivity"
+            android:windowSoftInputMode = "adjustResize|adjustPan"
             android:exported="false" />
         <activity
             android:name=".view.activity.ProfileClientActivity"
-            android:exported="false" />
+            android:exported="false"/>
         <activity
             android:name=".view.activity.CreateClientActivity"
+            android:windowSoftInputMode = "adjustResize|adjustPan"
             android:exported="false" />
         <activity
             android:name=".view.activity.MainActivity"
