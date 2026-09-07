@@ -136,6 +136,7 @@ class MainViewModel(
                 sb.append("${v.visit.latitude};")
                 sb.append("${v.visit.longitude};")
                 sb.append("${v.client.name.replace(";", ",")};") // Подставляем имя из связанной сущности
+                sb.append("${v.visit.planned_day};")
                 sb.append("${v.visit.planned_month};")
                 sb.append("${v.visit.planned_year};")
                 sb.append("${v.visit.actual_date};")
@@ -196,15 +197,16 @@ class MainViewModel(
                         address = values[2].ifEmpty { null },
                         latitude = values[3].toDoubleOrNull() ?: 0.0,
                         longitude = values[4].toDoubleOrNull() ?: 0.0,
-                        planned_month = values[6].toIntOrNull() ?: 1,
-                        planned_year = values[7].toIntOrNull() ?: 2026,
-                        actual_date = values[8].toIntOrNull() ?: 0,
-                        status = values[9],
-                        work_type = values[10],
-                        price = values[11].toIntOrNull() ?: 0,
-                        parts = values[12],
-                        period = values[13].toIntOrNull() ?: 0,
-                        comment = values[14]
+                        planned_day = values[6].toIntOrNull() ?: 1,
+                        planned_month = values[7].toIntOrNull() ?: 1,
+                        planned_year = values[8].toIntOrNull() ?: 2026,
+                        actual_date = values[9].toIntOrNull() ?: 0,
+                        status = values[10],
+                        work_type = values[11],
+                        price = values[12].toIntOrNull() ?: 0,
+                        parts = values[13],
+                        period = values[14].toIntOrNull() ?: 0,
+                        comment = values[15]
                     )
 
                     visits.add(visit)

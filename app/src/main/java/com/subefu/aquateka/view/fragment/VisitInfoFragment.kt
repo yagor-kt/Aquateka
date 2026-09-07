@@ -139,11 +139,11 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
         """
             |Периодичность: ${visit.period}
             |Следующий визит: $nextVisit
-            |Запланированная дата визита: ${visit.planned_month}.${visit.planned_year}
+            |Запланированная дата визита: ${visit.planned_day.getFormatDate()}.${visit.planned_month.getFormatDate()}.${visit.planned_year.getFormatDate()}
         """.trimMargin()
 
     fun getNextDate() =
-        LocalDate.of(visit.planned_year, visit.planned_month, 1)
+        LocalDate.of(visit.planned_year, visit.planned_month, visit.planned_day)
             .plusMonths(visit.period.toLong())
             .format(formatter)
 
@@ -178,6 +178,7 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
     }
 
     fun String?.getOrCap(cup: String = "-") = if (this.isNullOrBlank()) cup else this
+    fun Int.getFormatDate() = if (this in 0..9) "0$this" else this
 
     override fun onDestroyView() {
         super.onDestroyView()

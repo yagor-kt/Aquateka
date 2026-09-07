@@ -10,6 +10,7 @@ data class Visit(
     val address: String?,
     val latitude: Double,
     val longitude: Double,
+    val planned_day: Int,
     val planned_month: Int,
     val planned_year: Int,
     val actual_date: Int,

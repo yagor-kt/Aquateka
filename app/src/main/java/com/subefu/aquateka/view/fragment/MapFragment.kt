@@ -1,11 +1,13 @@
 package com.subefu.aquateka.view.fragment
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
@@ -78,6 +80,7 @@ class MapFragment : Fragment() {
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -113,6 +116,10 @@ class MapFragment : Fragment() {
             }
 
             true
+        }
+
+        binding.touchableWrapper.onTouch = {
+            binding.root.requestDisallowInterceptTouchEvent(true)
         }
     }
 

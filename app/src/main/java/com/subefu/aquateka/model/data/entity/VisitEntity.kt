@@ -27,6 +27,8 @@ data class VisitEntity(
     val address: String?,
     val latitude: Double,
     val longitude: Double,
+    @ColumnInfo(name = "planned_day", defaultValue = "1")
+    val plannedDay: Int = 1,
     @ColumnInfo(name = "planned_month")
     val plannedMonth: Int,
     @ColumnInfo(name = "planned_year")

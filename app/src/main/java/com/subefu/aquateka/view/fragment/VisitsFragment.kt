@@ -45,7 +45,6 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
 class VisitsFragment : Fragment() {
     private var _binding: FragmentOrdersBinding? = null
     private val binding get() = _binding!!
@@ -60,7 +59,9 @@ class VisitsFragment : Fragment() {
 
     private lateinit var rvAdapter: VisitCardAdapter
     private var currantDay = LocalDate.now()
+
     private var currentVisits = listOf<VisitWithClient>()
+    private var currentUnapprovedVisits = listOf<Visit>()
 
     private var isPostponedOnDate = false
 
@@ -111,7 +112,7 @@ class VisitsFragment : Fragment() {
                         Log.d("MyVisitF", "ложное срабатывание переноса")
                     else{
                         isPostponedOnDate = true
-                        askPostponeUnapprovedVisit(visitsPayload.visits)
+                        currentUnapprovedVisits = visitsPayload.visits
                     }
                 }
             }
@@ -136,6 +137,13 @@ class VisitsFragment : Fragment() {
             val intent = Intent(requireContext(), CreateVisitActivity::class.java)
             intent.putExtra(MyConst.TYPE, MyConst.CREATE)
             startActivity(intent)
+        }
+
+        binding.btCheckIsPostpone.setOnClickListener {
+            if(currentUnapprovedVisits.isNotEmpty() && isPostponedOnDate)
+                askPostponeUnapprovedVisit(currentUnapprovedVisits)
+            else
+                AppEventBus.post(AppMessage.Success("Нет визитов для переноса"))
         }
     }
 
@@ -275,6 +283,7 @@ class VisitsFragment : Fragment() {
             .setPositiveButton("Да") { witch, _ ->
                 Log.d("MyVisit", "selected auto postpone visits")
                 sharedViewModel.postponeVisit(null, MyConst.AUTOMATIC_POSTPONE, *unapprovedVisits.toTypedArray())
+                currentUnapprovedVisits = listOf()
                 witch.cancel()
             }
             .setNeutralButton("Нет") { witch, _ ->
