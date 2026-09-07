@@ -120,7 +120,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Дата визита(например 1,6,2026)">
+                android:hint="Дата визита(например 010626)">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"

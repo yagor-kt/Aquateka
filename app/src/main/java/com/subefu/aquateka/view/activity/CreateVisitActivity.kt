@@ -140,7 +140,7 @@ class CreateVisitActivity : AppCompatActivity() {
         binding.apply {
             tfAddress.editText?.setText(visit.address)
             tfCoordinate.editText?.setText("${visit.latitude},${visit.longitude}")
-            tfPlannedVisit.editText?.setText("${visit.planned_month}${visit.planned_year%2000}")
+            tfPlannedVisit.editText?.setText("${visit.planned_day.getFormatDate()}${visit.planned_month.getFormatDate()}${(visit.planned_year%2000).getFormatDate()}")
             tfWorkType.editText?.setText(visit.work_type)
             tfPrice.editText?.setText(visit.price.toString())
             tfDetails.editText?.setText(visit.parts)
@@ -182,8 +182,9 @@ class CreateVisitActivity : AppCompatActivity() {
             address = binding.tfAddress.editText?.text.toString(),
             latitude = binding.tfCoordinate.editText?.text.toString().split(",").first().trim().toDoubleOrNull() ?: 0.0,
             longitude = binding.tfCoordinate.editText?.text.toString().split(",").last().trim().toDoubleOrNull() ?: 0.0,
-            planned_month = binding.tfPlannedVisit.editText?.text.toString().substring(0, 2).toIntOrNull() ?: 0,
-            planned_year = binding.tfPlannedVisit.editText?.text.toString().substring(2).toIntOrNull()?.run { this + 2000 } ?: 0,
+            planned_day = binding.tfPlannedVisit.editText?.text.toString().substring(0, 2).toIntOrNull() ?: 0,
+            planned_month = binding.tfPlannedVisit.editText?.text.toString().substring(2, 4).toIntOrNull() ?: 0,
+            planned_year = binding.tfPlannedVisit.editText?.text.toString().substring(4).toIntOrNull()?.run { this + 2000 } ?: 0,
             actual_date = currentVisit?.actual_date ?: 0,
             status = currentVisit?.status ?: MyConst.PLANNED,
             work_type = binding.tfWorkType.editText?.text.toString(),
@@ -211,9 +212,10 @@ class CreateVisitActivity : AppCompatActivity() {
                 val longitude = binding.tfCoordinate.editText?.text!!.split(",")[1].toDouble()
             },
             checkValidateField(MyConst.BAD_DATE) {
-                val planned_month = binding.tfPlannedVisit.editText?.text.toString().substring(0, 2).toIntOrNull() ?: 0
-                val planned_year = binding.tfPlannedVisit.editText?.text.toString().substring(2).toIntOrNull() ?: 0
-                if (planned_year !in 10..90 || planned_month !in 1  ..12) throw Exception()
+                val planned_day = binding.tfPlannedVisit.editText?.text.toString().substring(0, 2).toIntOrNull() ?: 0
+                val planned_month = binding.tfPlannedVisit.editText?.text.toString().substring(2, 4).toIntOrNull() ?: 0
+                val planned_year = binding.tfPlannedVisit.editText?.text.toString().substring(4).toIntOrNull() ?: 0
+                if (planned_year !in 0..99 ||planned_day !in 1..31 || planned_month !in 1  ..12) throw Exception()
             },
             checkValidateField(MyConst.BAD_PRICE) {
                 val price = binding.tfPrice.editText?.text.toString().toInt()
@@ -251,6 +253,8 @@ class CreateVisitActivity : AppCompatActivity() {
             return false
         }
     }
+
+    fun Int.getFormatDate() = if (this in 0..9) "0$this" else this.toString()
 
     override fun onDestroy() {
         super.onDestroy()

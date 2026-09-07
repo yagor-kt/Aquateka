@@ -16,8 +16,9 @@ import com.subefu.aquateka.model.data.entity.VisitEntity
 
 @Database(
     entities = [ClientEntity::class, VisitEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
+    autoMigrations = [AutoMigration(from = 2, to = 3)]
 )
 abstract class DataBase: RoomDatabase() {
     abstract fun getDao(): DAO
@@ -116,7 +117,6 @@ abstract class DataBase: RoomDatabase() {
                     DataBase::class.java,
                     "myDatabase.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
                 instance
