@@ -67,19 +67,19 @@ class CreateVisitActivity : AppCompatActivity() {
         viewModel.clients
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
             .onEach { clients ->
-                val customers = clients.map { it.name }.toTypedArray()
-
-                (binding.tfName.editText as MaterialAutoCompleteTextView)
-                    .setSimpleItems(customers)
+//                (binding.tfName.editText as MaterialAutoCompleteTextView)
+//                    .setSimpleItems(customers)
                 clientList.clear()
-                clientList.addAll(clients)
+                clientList.addAll(clients.sortedBy { it.name })
+
+                val adapterClient = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, clientList.map { it.name }.toTypedArray())
+                binding.auClient.setAdapter(adapterClient)
 
                 val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
                 selectClient?.let { client ->
-                    val autoCompleteTextView = binding.tvName
+                    val autoCompleteTextView = binding.auClient
                     autoCompleteTextView.setText(client.name, false)
                 }
-
             }
             .launchIn(lifecycleScope)
 
@@ -91,8 +91,8 @@ class CreateVisitActivity : AppCompatActivity() {
             setupEditData()
         }
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, MyConst.WORK_TYPE)
-        binding.auWorkType.setAdapter(adapter)
+        val adapterWorkType = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, MyConst.WORK_TYPE)
+        binding.auWorkType.setAdapter(adapterWorkType)
 
         binding.tfName.editText?.doAfterTextChanged { view ->
             currentClient = clientList.find { it.name == binding.tfName.editText?.text.toString()}

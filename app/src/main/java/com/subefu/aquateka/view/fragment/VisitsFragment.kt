@@ -223,7 +223,7 @@ class VisitsFragment : Fragment() {
 
         binding.rvOrders.apply{
             adapter = rvAdapter
-            addItemDecoration(TopBottomPaddingDecoration(10, 10))
+            addItemDecoration(TopBottomPaddingDecoration(10, 100))
         }
     }
 

@@ -91,7 +91,9 @@ class MapFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { visits ->
                 Log.d("MyMap", "on each visits")
-                chooseCurrentMonthVisit(visits)
+                chooseCurrentMonthVisit(
+                    visits.filter { it.visit.status != MyConst.COMPLETED }
+                )
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -278,11 +280,10 @@ class MapFragment : Fragment() {
 
     fun updateShortInfo(visits: List<VisitWithClient>){
         val all = visits.size
-        val active = visits.filter { it.visit.status == MyConst.PLANNED }.size
 
         binding.apply {
             binding.tvAll.text = "Всего: $all"
-            binding.tvActive.text = "Активных: $active"
+            binding.tvActive.text = ""
         }
     }
     fun updateShortInfo(clients: List<Client>): Boolean{
