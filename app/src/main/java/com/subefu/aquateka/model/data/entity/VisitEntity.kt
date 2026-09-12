@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.subefu.aquateka.model.domain.MyConst
 
 @Entity(
     tableName = "Visit",
@@ -41,5 +42,7 @@ data class VisitEntity(
     val price: Int,
     val parts: String,
     val period: Int,
-    val comment: String
+    val comment: String,
+    @ColumnInfo(defaultValue = "BLACK")
+    val color: String = "BLACK"
 )

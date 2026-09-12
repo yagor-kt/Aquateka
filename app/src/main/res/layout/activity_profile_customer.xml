@@ -22,40 +22,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/ib_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:background="@android:color/transparent"
+        android:padding="10dp"
+        android:src="@drawable/ic_location_small"
+        app:layout_constraintTop_toTopOf="@id/tv_month"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_month"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/bt_delete"
-        style="@style/Button.IconOnly"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="8dp"
-        app:icon="@drawable/ic_delete"
-        app:layout_constraintEnd_toStartOf="@+id/bt_edit"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/bt_edit"
-        style="@style/Button.IconOnly"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="8dp"
-        app:icon="@drawable/ic_edit"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-        <TextView
-            android:id="@+id/userInfo"
-            style="@style/InfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Следующий визит: "
-            android:layout_marginStart="14dp"
-            android:layout_marginTop="20dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_month"/>
+    <TextView
+        android:id="@+id/userInfo"
+        style="@style/InfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Следующий визит: "
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_month"/>
 
 
     <com.google.android.material.divider.MaterialDivider
@@ -77,5 +65,41 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/materialDivider" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/bt_delete"
+            style="?attr/materialButtonTonalStyle"
+            android:backgroundTint="@color/blue_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="УДАЛИТЬ"
+            android:textColor="@color/text"
+            app:icon="@drawable/ic_delete" />
+
+        <Button
+            android:id="@+id/bt_edit"
+            style="?attr/materialButtonTonalStyle"
+            android:backgroundTint="@color/blue_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1"
+            android:text="ИЗМЕНИТЬ"
+            android:textColor="@color/text"
+            app:icon="@drawable/ic_edit" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

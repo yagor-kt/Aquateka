@@ -1,5 +1,6 @@
 package com.subefu.aquateka.view.activity
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
@@ -64,11 +65,17 @@ class CreateVisitActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+        val type = intent.getStringExtra(MyConst.TYPE)
+        if(type == MyConst.CREATE)
+            binding.tvTitle.text = "Создание заказа"
+        else {
+            binding.tvTitle.text = "Редактирвоание заказа"
+            setupEditData()
+        }
+
         viewModel.clients
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
             .onEach { clients ->
-//                (binding.tfName.editText as MaterialAutoCompleteTextView)
-//                    .setSimpleItems(customers)
                 clientList.clear()
                 clientList.addAll(clients.sortedBy { it.name })
 
@@ -83,28 +90,20 @@ class CreateVisitActivity : AppCompatActivity() {
             }
             .launchIn(lifecycleScope)
 
-        val type = intent.getStringExtra(MyConst.TYPE)
-        if(type == MyConst.CREATE)
-            binding.tvTitle.text = "Создание заказа"
-        else {
-            binding.tvTitle.text = "Редактирвоание заказа"
-            setupEditData()
+        binding.tfName.editText?.doAfterTextChanged { view ->
+            currentClient = clientList.find { it.name == binding.tfName.editText?.text.toString()}
+            currentClient?.let {
+                binding.apply {
+                    if (currentClient != null) return@apply
+                    tfPeriod.editText?.setText((it.period_month ?: 0).toString())
+                    tfAddress.editText?.setText(it.address ?: "")
+                    tfCoordinate.editText?.setText("${it.latitude},${it.longitude}")
+                }
+            }
         }
 
         val adapterWorkType = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, MyConst.WORK_TYPE)
         binding.auWorkType.setAdapter(adapterWorkType)
-
-        binding.tfName.editText?.doAfterTextChanged { view ->
-            currentClient = clientList.find { it.name == binding.tfName.editText?.text.toString()}
-//            Log.d("MyCOA", currentClient?.name.toString())
-            currentClient?.let {
-                binding.apply {
-                    tfAddress.editText?.setText(it.address ?: "")
-                    tfCoordinate.editText?.setText("${it.latitude},${it.longitude}")
-                    tfPeriod.editText?.setText((it.period_month ?: 0).toString())
-                }
-            }
-        }
 
         binding.btCancelled.setOnClickListener {
             val builder = getCancelledVisitDialog()
@@ -129,14 +128,15 @@ class CreateVisitActivity : AppCompatActivity() {
 
         if(visitWithClient == null) return
 
-        val visit = visitWithClient.visit
-        currentVisit = visit
+        currentVisit = visitWithClient.visit
         currentClient = visitWithClient.client
 
-        fillUiVisitData(visit)
+        fillUiVisitData(currentVisit!!)
     }
 
+    @SuppressLint("SetTextI18n")
     fun fillUiVisitData(visit: Visit){
+        if (currentVisit == null) return
         binding.apply {
             tfAddress.editText?.setText(visit.address)
             tfCoordinate.editText?.setText("${visit.latitude},${visit.longitude}")
@@ -192,6 +192,7 @@ class CreateVisitActivity : AppCompatActivity() {
             parts = binding.tfDetails.editText?.text.toString(),
             comment = binding.tfComment.editText?.text.toString(),
             period = binding.tfPeriod.editText?.text.toString().toIntOrNull() ?: 0,
+            color = MyConst.VISIT_COLOR[0]
         )
     }
 

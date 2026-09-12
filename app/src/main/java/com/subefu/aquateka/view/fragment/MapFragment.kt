@@ -2,6 +2,13 @@ package com.subefu.aquateka.view.fragment
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +29,7 @@ import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
 import com.subefu.aquateka.model.domain.MyConst
 import com.subefu.aquateka.model.domain.model.Client
+import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
@@ -39,6 +47,7 @@ import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.net.PortUnreachableException
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -114,7 +123,9 @@ class MapFragment : Fragment() {
                 AppEventBus.post(AppMessage.TouchMapPoint("Выбран клиент: ${client.name}", client))
             }
             visitWithClient?.let {
-                AppEventBus.post(AppMessage.TouchMapPoint("Выбран визит: ${it.client.name}", visitWithClient))
+                val bottomSheet = VisitInfoFragment.newInstance(visit = it)
+                bottomSheet.show(childFragmentManager, "MyBottomSheetDialog")
+//                AppEventBus.post(AppMessage.TouchMapPoint("Выбран визит: ${it.client.name}", visitWithClient))
             }
 
             true
@@ -159,7 +170,20 @@ class MapFragment : Fragment() {
         }
         Log.d("MyMap", "points on update visits: $points")
         updateShortInfo(currentVisits)
-        setPointsOnMap(points)
+        setPointsOnMap(points){ placemarkMapObject, item ->
+            try {
+                val visit = (item as VisitWithClient).visit
+                val color = getVisitColor(visit.color)
+                val icon = createMarkerIcon(color)
+                placemarkMapObject.setIcon(ImageProvider.fromBitmap(icon))
+            }catch (e: ClassCastException){
+                sharedViewModel.postEvent("Ошибка обработки цвета точки", true)
+                val color = Color.BLACK
+                val icon = createMarkerIcon(color)
+                placemarkMapObject.setIcon(ImageProvider.fromBitmap(icon))
+            }
+
+        }
         rvAdapter.updateList(currentVisits)
     }
 
@@ -215,14 +239,14 @@ class MapFragment : Fragment() {
         ).show()
     }
 
-    fun setPointsOnMap(items: List<Pair<Point, Any>>){
+    fun setPointsOnMap(items: List<Pair<Point, Any>>, setIconToPoint: ((PlacemarkMapObject, Any) -> Unit)? = null){
         points = items
         isChangeMap = false
         Log.d("MyMap", "points set on map: $points")
         mapView.map.mapObjects.clear()
-        val imageProvider = ImageProvider.fromResource(requireContext(), R.drawable.ic_location_small)
         items.onEach { item ->
-            mapView.map.mapObjects.addPlacemark(item.first, imageProvider).apply {
+            mapView.map.mapObjects.addPlacemark(item.first).apply {
+                setIconToPoint?.invoke(this, item.second)
                 addTapListener(markerTapListener)
                 geometry = item.first
                 userData = item.second
@@ -325,6 +349,29 @@ class MapFragment : Fragment() {
         val northEast = Point(maxLat, maxLon)
 
         return BoundingBox(southWest, northEast)
+    }
+
+    fun createMarkerIcon(color: Int): Bitmap{
+        val bitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.ic_location_small)
+        val mutBitMap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(mutBitMap)
+        val paint = Paint().apply {
+            this.color = color
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        }
+        canvas.drawRect(0f, 0f, mutBitMap.width.toFloat(), mutBitMap.height.toFloat(), paint)
+        return mutBitMap
+    }
+
+    fun getVisitColor(color: String): Int{
+        return when(color){
+            MyConst.VISIT_COLOR[0] -> Color.BLACK
+            MyConst.VISIT_COLOR[1] -> Color.MAGENTA
+            MyConst.VISIT_COLOR[2] -> Color.GREEN
+            MyConst.VISIT_COLOR[3] -> Color.RED
+            MyConst.VISIT_COLOR[4] -> Color.BLUE
+            else ->  R.color.black
+        }
     }
 
     override fun onStart() {

@@ -5,11 +5,11 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
 import android.icu.util.Calendar
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -35,13 +35,12 @@ import com.subefu.aquateka.viewmodel.EditItemViewModelFactory
 import com.subefu.aquateka.viewmodel.MainViewModel
 import com.subefu.aquateka.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.retry
-import kotlinx.coroutines.flow.retryWhen
 import kotlin.getValue
+import androidx.core.net.toUri
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ProfileClientActivity : AppCompatActivity() {
 
@@ -102,7 +101,7 @@ class ProfileClientActivity : AppCompatActivity() {
         messageSubscriptionJob = AppEventBus.events
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
             .onEach { message ->
-                when(message){
+                when (message) {
                     is AppMessage.Error -> showSnackBar(message.text, true)
                     is AppMessage.Success -> showSnackBar(message.text, false)
                     else -> {}
@@ -113,6 +112,21 @@ class ProfileClientActivity : AppCompatActivity() {
 
         setupRV()
 
+        binding.userInfo.setOnClickListener {
+            val phones = currentClient.phone.split(",").map { it.trim() }
+            if (phones.size != 1) {
+                selectPhoneNumber(phones)
+            } else {
+                goToCallOnNumber(phones.first())
+            }
+        }
+
+        binding.ibLocation.setOnClickListener {
+            val uri = "geo:0,0?q=${currentClient.latitude},${currentClient.longitude}(${Uri.encode(currentClient.name)})".toUri()
+            val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+            startActivity(mapIntent)
+        }
+
         binding.btDelete.setOnClickListener {
             val builder = getDeleteClientDialog()
             builder.show()
@@ -122,7 +136,32 @@ class ProfileClientActivity : AppCompatActivity() {
             val builder = getEditClientDialog()
             builder.show()
         }
+    }
 
+    fun selectPhoneNumber(phones: List<String>){
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Выберите номер телефона")
+            .setItems(phones.toTypedArray()){ dialog, which ->
+                val phone = phones[which]
+                goToCallOnNumber(phone)
+            }
+            .setNegativeButton("Закрыть") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    fun goToCallOnNumber(phoneNumber: String){
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Позвонить по номеру \"$phoneNumber\"")
+            .setNegativeButton("Закрыть") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Да") { dialog, _ ->
+                val intent = Intent(Intent.ACTION_DIAL, "tel: $phoneNumber".toUri())
+                startActivity(intent)
+            }
+            .show()
     }
 
     fun showSnackBar(text: String, isError: Boolean){
@@ -175,7 +214,7 @@ class ProfileClientActivity : AppCompatActivity() {
 
         binding.rvVisits.apply{
             adapter = rvAdapter
-            addItemDecoration(TopBottomPaddingDecoration(10, 10))
+            addItemDecoration(TopBottomPaddingDecoration(10, 100))
         }
     }
 
