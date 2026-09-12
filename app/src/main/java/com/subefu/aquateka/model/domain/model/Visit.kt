@@ -19,5 +19,6 @@ data class Visit(
     val price: Int,
     val parts: String,
     val comment: String,
-    val period: Int
+    val period: Int,
+    val color: String,
 ): Parcelable

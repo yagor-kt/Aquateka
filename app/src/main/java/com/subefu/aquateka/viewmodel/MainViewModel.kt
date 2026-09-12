@@ -206,7 +206,8 @@ class MainViewModel(
                         price = values[12].toIntOrNull() ?: 0,
                         parts = values[13],
                         period = values[14].toIntOrNull() ?: 0,
-                        comment = values[15]
+                        comment = values[15],
+                        color = MyConst.VISIT_COLOR[0]
                     )
 
                     visits.add(visit)

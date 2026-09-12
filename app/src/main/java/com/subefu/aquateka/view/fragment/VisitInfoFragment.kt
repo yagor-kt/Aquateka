@@ -3,6 +3,8 @@ package com.subefu.aquateka.view.fragment
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,9 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.subefu.aquateka.App
 import com.subefu.aquateka.R
 import com.subefu.aquateka.databinding.FragmentOrderInfoBinding
@@ -34,7 +38,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.getValue
 
-@RequiresApi(Build.VERSION_CODES.O)
 class VisitInfoFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentOrderInfoBinding? = null
@@ -80,6 +83,34 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
             startActivity(intent)
         }
 
+        binding.ibLocation.setOnClickListener {
+            val uri = "geo:0,0?q=${visit.latitude},${visit.longitude}(${Uri.encode(client.name)})".toUri()
+            val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+            startActivity(mapIntent)
+        }
+
+        binding.btSetColorPoint.setOnClickListener {
+            val colors = MyConst.VISIT_COLOR.toTypedArray()
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Выберите цвет")
+                .setItems(colors) { dialog, which ->
+                    viewModel.updateVisit(
+                        visit.copy(color = colors[which]),
+                        false
+                    )
+                    val color = when(which) {
+                        0 -> Color.BLACK
+                        1 -> Color.MAGENTA
+                        2 -> Color.GREEN
+                        3 -> Color.RED
+                        4 -> Color.BLUE
+                        else -> Color.BLACK
+                    }
+                    binding.viewColorPoint.setBackgroundColor(color)
+                }
+                .show()
+        }
+
         binding.btDelete.setOnClickListener {
             val builder = getDeleteVisitDialog()
             builder.show()
@@ -113,6 +144,17 @@ class VisitInfoFragment : BottomSheetDialogFragment() {
                 MyConst.PLANNED -> ContextCompat.getColorStateList(requireContext(), R.color.orange)
                 else -> ContextCompat.getColorStateList(requireContext(), R.color.dark_surface)
             }
+
+            viewColorPoint.setBackgroundColor(
+                when(visit.color){
+                    MyConst.VISIT_COLOR[0] -> Color.BLACK
+                    MyConst.VISIT_COLOR[1] -> Color.MAGENTA
+                    MyConst.VISIT_COLOR[2] -> Color.GREEN
+                    MyConst.VISIT_COLOR[3] -> Color.RED
+                    MyConst.VISIT_COLOR[4] -> Color.BLUE
+                    else -> R.color.black
+                }
+            )
         }
     }
 

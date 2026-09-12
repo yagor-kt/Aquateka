@@ -31,6 +31,14 @@ abstract class MyConst{
 
         val BAD_PHONE = "Формат номера неверен"
 
+        val VISIT_COLOR = listOf(
+            "BLACK",
+            "MAGENTA",
+            "GREEN",
+            "RED",
+            "BLUE",
+        )
+
         val WORK_TYPE = listOf(
             "Техническое обслужвание",
             "Монтаж",

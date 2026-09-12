@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,7 +9,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:background="@color/white"
         tools:context=".view.fragment.VisitInfoFragment">
 
@@ -21,6 +21,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_divide" />
+
+        <ImageButton
+            android:id="@+id/ib_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@android:color/transparent"
+            android:padding="10dp"
+            android:src="@drawable/ic_location_small"
+            app:layout_constraintBottom_toBottomOf="@+id/imageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/imageView" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -102,6 +114,38 @@
             android:layout_marginVertical="10dp"
             app:layout_constraintTop_toBottomOf="@id/tv_period_info" />
 
+        <Button
+            android:id="@+id/bt_set_color_point"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:backgroundTint="@color/blue_light"
+            android:layout_marginTop="10dp"
+            android:text="УСТАНОВИТЬ ЦВЕТ МЕТКИ"
+            android:textColor="@color/text"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+        <View
+            android:id="@+id/view_color_point"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="12dp"
+            android:background="@color/black"
+            app:layout_constraintBottom_toBottomOf="@+id/bt_set_color_point"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/bt_set_color_point" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginVertical="10dp"
+            app:layout_constraintTop_toBottomOf="@id/bt_set_color_point" />
+
         <TextView
             android:id="@+id/tv_visit_history"
             style="@style/InfoText"
@@ -111,7 +155,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="10dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintTop_toBottomOf="@id/divider1"
             tools:text="Desctiption customer \nOn some line" />
 
         <LinearLayout
@@ -124,7 +168,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider">
+            app:layout_constraintTop_toBottomOf="@+id/divider1">
 
             <Button
                 android:id="@+id/bt_delete"

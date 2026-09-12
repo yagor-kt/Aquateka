@@ -29,6 +29,7 @@ fun VisitEntity.toModel()
         this.parts,
         this.comment,
         this.period,
+        this.color,
     )
 
 fun ClientEntity.toModel()
@@ -60,6 +61,7 @@ fun Visit.toEntity()
     this.parts,
     this.period,
     this.comment,
+    this.color,
 )
 
 fun Client.toEntity()
