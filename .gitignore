@@ -1,5 +1,9 @@
 *.iml
 .gradle
+app/release/
+app/key_store.jks
+.idea/androidTestResultsUserPreferences.xml
+app/schemas/
 /local.properties
 /.idea/caches
 /.idea/libraries
