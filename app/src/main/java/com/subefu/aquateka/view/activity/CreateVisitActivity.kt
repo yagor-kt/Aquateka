@@ -45,6 +45,7 @@ class CreateVisitActivity : AppCompatActivity() {
         EditItemViewModelFactory(App.repository)
     }
 
+    private var isSetupUI = true
     private val clientList = mutableListOf<Client>()
     private var currentClient: Client? = null
     private var currentVisit: Visit? = null
@@ -60,18 +61,6 @@ class CreateVisitActivity : AppCompatActivity() {
             view.setPadding(0, systemBars.top, 0, imeInsets.bottom)
             insets
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        val type = intent.getStringExtra(MyConst.TYPE)
-        if(type == MyConst.CREATE)
-            binding.tvTitle.text = "Создание заказа"
-        else {
-            binding.tvTitle.text = "Редактирвоание заказа"
-            setupEditData()
-        }
 
         viewModel.clients
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
@@ -82,29 +71,55 @@ class CreateVisitActivity : AppCompatActivity() {
                 val adapterClient = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, clientList.map { it.name }.toTypedArray())
                 binding.auClient.setAdapter(adapterClient)
 
-                val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
-                selectClient?.let { client ->
-                    val autoCompleteTextView = binding.auClient
-                    autoCompleteTextView.setText(client.name, false)
-                }
+                setupUI()
+//                val selectClient = clients.find { it.clietn_id == currentClient?.clietn_id }
+//                selectClient?.let { client ->
+//                    val autoCompleteTextView = binding.auClient
+//                    autoCompleteTextView.setText(client.name, false)
+//                }
             }
             .launchIn(lifecycleScope)
+    }
 
+    fun setupUI(){
+        if (isSetupUI) {
+            isSetupUI = isSetupUI.not()
+            return
+        }
+
+        val type = intent.getStringExtra(MyConst.TYPE)
+        if(type == MyConst.CREATE) {
+            binding.tvTitle.text = "Создание заказа"
+        }
+        else {
+            binding.tvTitle.text = "Редактирвоание заказа"
+            setupEditData()
+        }
+
+        setClientChangeListener()
+        setWorkTypeList()
+        setButtonClickListener()
+    }
+
+    fun setClientChangeListener(){
         binding.tfName.editText?.doAfterTextChanged { view ->
             currentClient = clientList.find { it.name == binding.tfName.editText?.text.toString()}
             currentClient?.let {
                 binding.apply {
-                    if (currentClient != null) return@apply
                     tfPeriod.editText?.setText((it.period_month ?: 0).toString())
                     tfAddress.editText?.setText(it.address ?: "")
                     tfCoordinate.editText?.setText("${it.latitude},${it.longitude}")
                 }
             }
         }
+    }
 
+    fun setWorkTypeList(){
         val adapterWorkType = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, MyConst.WORK_TYPE)
         binding.auWorkType.setAdapter(adapterWorkType)
+    }
 
+    fun setButtonClickListener(){
         binding.btCancelled.setOnClickListener {
             val builder = getCancelledVisitDialog()
             builder.show()
@@ -136,8 +151,8 @@ class CreateVisitActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     fun fillUiVisitData(visit: Visit){
-        if (currentVisit == null) return
         binding.apply {
+            tfName.editText?.setText(currentClient?.name)
             tfAddress.editText?.setText(visit.address)
             tfCoordinate.editText?.setText("${visit.latitude},${visit.longitude}")
             tfPlannedVisit.editText?.setText("${visit.planned_day.getFormatDate()}${visit.planned_month.getFormatDate()}${(visit.planned_year%2000).getFormatDate()}")
