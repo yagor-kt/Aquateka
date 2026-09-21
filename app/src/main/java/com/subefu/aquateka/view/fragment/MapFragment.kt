@@ -41,6 +41,7 @@ import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
@@ -254,8 +255,7 @@ class MapFragment : Fragment() {
         }
         if(mapView.height != 0)
             mapView.mapWindow.focusRect = getScreenRect()
-        val boundingBox = getBoundingBoxForPosition(points.map { it.first })
-        val cameraPosition = mapView.map.cameraPosition(boundingBox, 0f, 0f, null)
+        val cameraPosition = mapView.getCameraForPosition(points.map{it.first})
         mapView.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 1.2f), null)
     }
 
@@ -328,10 +328,17 @@ class MapFragment : Fragment() {
         return ScreenRect(topLeft, bottomRight)
     }
 
-    fun getBoundingBoxForPosition(points: List<Point>): BoundingBox{
-        if(points.isEmpty())
+    fun MapView.getCameraForPosition(points: List<Point>): CameraPosition{
+        val points = points.distinct()
+
+        if(points.isEmpty()) {
             //крайние точки России
-            return BoundingBox(Point(54.710162, 20.510137), Point(43.983211, 132.919176))
+            val boundingBox = BoundingBox(Point(43.983211, 20.510137), Point(54.710162, 132.919176))
+            return this.map.cameraPosition(boundingBox, 1f, 0f, null)
+        }
+        else if (points.size == 1) {
+            return CameraPosition(points.first(), 15f, 0f, 0f)
+        }
 
         var maxLat = points[0].latitude
         var minLat = points[0].latitude
@@ -339,6 +346,7 @@ class MapFragment : Fragment() {
         var minLon = points[0].longitude
 
         for(point in points){
+            Log.d("MyMapBoundary", "lat: ${point.latitude}; lon: ${point.longitude}")
             if(point.latitude < minLat) minLat = point.latitude
             if(point.latitude > maxLat) maxLat = point.latitude
             if(point.longitude < minLon) minLon = point.longitude
@@ -348,7 +356,7 @@ class MapFragment : Fragment() {
         val southWest = Point(minLat, minLon)
         val northEast = Point(maxLat, maxLon)
 
-        return BoundingBox(southWest, northEast)
+        return this.map.cameraPosition(BoundingBox(southWest, northEast), 0f, 0f, null)
     }
 
     fun createMarkerIcon(color: Int): Bitmap{
