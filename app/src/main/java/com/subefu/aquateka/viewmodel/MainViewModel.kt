@@ -8,13 +8,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AppEventBus
-import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.utill.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
-import com.subefu.aquateka.model.domain.usecase.PostponeVisitUseCase
-import com.subefu.aquateka.model.domain.utill.ImportExportState
+import com.subefu.aquateka.model.domain.usecase.RescheduleVisitUseCase
+import com.subefu.aquateka.view.utils.ImportExportState
 import com.subefu.aquateka.view.utils.UnapprovedVisitsPayload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -39,7 +39,7 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 class MainViewModel(
     private val repository: Repository,
-    private val postponeVisitUseCase: PostponeVisitUseCase,
+    private val rescheduleVisitUseCase: RescheduleVisitUseCase,
 ): ViewModel() {
 
     private val currantDate: MutableStateFlow<Pair<Int, Int>>
@@ -267,7 +267,7 @@ class MainViewModel(
         vararg visit: Visit,
     ) {
         Log.d("MyMainVM", "postpone visits: ${visit.toList()}, on date: $date")
-        postponeVisitUseCase.execute(visit.toList(), mode, date ?: currantDate.value)
+        rescheduleVisitUseCase.execute(visit.toList(), mode, date ?: currantDate.value)
     }
 
     fun resetImportState() {
@@ -288,12 +288,12 @@ class MainViewModelFactory(private val repository: Repository): ViewModelProvide
     @RequiresApi(Build.VERSION_CODES.O)
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(MainViewModel::class.java)){
-            val postponeVisitUseCase = PostponeVisitUseCase(repository)
+            val rescheduleVisitUseCase = RescheduleVisitUseCase(repository)
 
             @Suppress("UNCHECKED_CAST")
             return MainViewModel(
                 repository,
-                postponeVisitUseCase,
+                rescheduleVisitUseCase,
                 ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

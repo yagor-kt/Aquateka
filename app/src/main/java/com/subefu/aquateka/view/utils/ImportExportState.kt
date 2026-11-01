@@ -1,4 +1,4 @@
-package com.subefu.aquateka.model.domain.utill
+package com.subefu.aquateka.view.utils
 
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit

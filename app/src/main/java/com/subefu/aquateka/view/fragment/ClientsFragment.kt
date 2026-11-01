@@ -27,10 +27,10 @@ import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
-import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.utill.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
-import com.subefu.aquateka.model.domain.utill.ImportExportState
+import com.subefu.aquateka.view.utils.ImportExportState
 import com.subefu.aquateka.view.activity.CreateClientActivity
 import com.subefu.aquateka.view.activity.ProfileClientActivity
 import com.subefu.aquateka.view.adapter.ClientCardAdapter
@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import kotlin.getValue
-import com.subefu.aquateka.model.domain.utill.ImportExportState.*
+import com.subefu.aquateka.view.utils.ImportExportState.*
 import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration
 
 @RequiresApi(Build.VERSION_CODES.O)
