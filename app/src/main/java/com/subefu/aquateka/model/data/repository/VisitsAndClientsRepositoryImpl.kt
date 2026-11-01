@@ -1,0 +1,85 @@
+package com.subefu.aquateka.model.data.repository
+
+import com.subefu.aquateka.model.data.db.dao.ClientsDao
+import com.subefu.aquateka.model.data.db.dao.VisitsDao
+import com.subefu.aquateka.model.data.db.utill.toEntity
+import com.subefu.aquateka.model.data.db.utill.toModel
+import com.subefu.aquateka.model.domain.model.Client
+import com.subefu.aquateka.model.domain.model.Visit
+import com.subefu.aquateka.model.domain.model.VisitWithClient
+import com.subefu.aquateka.model.domain.repository.Repository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+class VisitsAndClientsRepositoryImpl(val visitsDao: VisitsDao, val clientsDao: ClientsDao): Repository {
+
+    override fun getVisitByClient(clientId: Int): Flow<List<Visit>> {
+        return visitsDao.getVisitsByClientIdSorted(clientId)
+            .map { it.map { it.toModel() } }
+    }
+
+    override suspend fun getVisitsByClientIds(clientIds: List<Int>): List<VisitWithClient> {
+        return visitsDao.getVisitsByClientIds(clientIds)
+            .map { it.toModel() }
+    }
+
+    override fun getVisitWithClientForMonth(month: Int, year: Int
+    ): Flow<List<VisitWithClient>> {
+        return visitsDao.getVisitsWithClientForMonth(month, year)
+            .map { it.map { it.toModel() } }
+    }
+
+    override fun getVisitBeforeDate(status: List<String>, month: Int, year: Int
+    ): Flow<List<Visit>> {
+        return visitsDao.getVisitBeforeDate(status, month, year)
+            .map { it.map { it.toModel() } }
+    }
+
+    override suspend fun insertVisit(visit: Visit): Int {
+        return visitsDao.insertVisit(visit.toEntity()).toInt()
+    }
+
+    override suspend fun insertVisits(visits: List<Visit>) {
+        visitsDao.insertVisits(visits.map { it.toEntity() })
+    }
+
+    override suspend fun updateVisit(visit: Visit) {
+        visitsDao.updateVisit(visit.toEntity())
+    }
+
+    override suspend fun deleteVisit(visit: Visit) {
+        visitsDao.deleteVisit(visit.toEntity())
+    }
+
+
+
+    override fun getClients(): Flow<List<Client>> {
+        return clientsDao.getClients()
+            .map { it.map { it.toModel() } }
+    }
+
+    override fun getClientById(clientId: Int): Flow<Client?> {
+        return clientsDao.getClientById(clientId)
+            .map { it?.toModel() }
+    }
+
+    override suspend fun getAllIDClients(): List<Int> {
+        return clientsDao.getAllIDClients()
+    }
+
+    override suspend fun insertClient(client: Client): Int {
+        return clientsDao.insertClient(client.toEntity()).toInt()
+    }
+
+    override suspend fun insertClients(clients: List<Client>) {
+        clientsDao.insertClients(clients.map { it.toEntity() })
+    }
+
+    override suspend fun updateClient(client: Client) {
+        clientsDao.updateClient(client.toEntity())
+    }
+
+    override suspend fun deleteClient(client: Client) {
+        clientsDao.deleteClient(client.toEntity())
+    }
+}
