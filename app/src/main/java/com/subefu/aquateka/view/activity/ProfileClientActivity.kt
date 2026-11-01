@@ -2,6 +2,10 @@ package com.subefu.aquateka.view.activity
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.icu.util.Calendar
@@ -9,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -117,7 +122,8 @@ class ProfileClientActivity : AppCompatActivity() {
             if (phones.size != 1) {
                 selectPhoneNumber(phones)
             } else {
-                goToCallOnNumber(phones.first())
+                openPhoneMenu(phones.first())
+//                goToCallOnNumber(phones.first())
             }
         }
 
@@ -143,7 +149,8 @@ class ProfileClientActivity : AppCompatActivity() {
             .setTitle("Выберите номер телефона")
             .setItems(phones.toTypedArray()){ dialog, which ->
                 val phone = phones[which]
-                goToCallOnNumber(phone)
+                openPhoneMenu(phone)
+//                goToCallOnNumber(phone)
             }
             .setNegativeButton("Закрыть") { dialog, _ ->
                 dialog.dismiss()
@@ -151,18 +158,114 @@ class ProfileClientActivity : AppCompatActivity() {
             .show()
     }
 
-    fun goToCallOnNumber(phoneNumber: String){
+    /*fun goToCallOnNumber(phoneNumber: String){
         MaterialAlertDialogBuilder(this)
             .setTitle("Позвонить по номеру \"$phoneNumber\"")
             .setNegativeButton("Закрыть") { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton("Да") { dialog, _ ->
-                val intent = Intent(Intent.ACTION_DIAL, "tel: $phoneNumber".toUri())
-                startActivity(intent)
+//                val intent = Intent(Intent.ACTION_DIAL, "tel: $phoneNumber".toUri())
+//                startActivity(intent)
+            }
+            .show()
+    }*/
+
+    private fun openPhoneMenu(rawPhone: String) {
+        // На входе ожидается международный номер: +79991234567.
+        val phone = "+" + rawPhone.filter(Char::isDigit).replaceFirst("8", "7")
+
+        if (!Regex("^\\+[1-9]\\d{7,14}$").matches(phone)) {
+            Toast.makeText(this, "Укажите номер в международном формате", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val digits = phone.drop(1)
+
+        AlertDialog.Builder(this)
+            .setTitle("Выбран номер: $phone")
+            .setItems(arrayOf("WhatsApp", "Telegram", "MAX", "SMS", "Позвонить")) { _, which ->
+                when (which) {
+                    0 -> openWhatsApp(digits)
+                    1 -> openTelegram(digits)
+                    2 -> openMax(phone)
+                    3 -> openSms(phone)
+                    4 -> openCall(phone)
+                }
             }
             .show()
     }
+
+    private fun openWhatsApp(digits: String) {
+        val link = Uri.parse("https://wa.me/$digits")
+
+        // Обычный WhatsApp; если его нет — WhatsApp Business.
+        val opened = tryStart(
+            Intent(Intent.ACTION_VIEW, link).setPackage("com.whatsapp")
+        ) || tryStart(
+            Intent(Intent.ACTION_VIEW, link).setPackage("com.whatsapp.w4b")
+        )
+
+        if (!opened) showMessage("WhatsApp не установлен")
+    }
+
+    private fun openTelegram(digits: String) {
+        // Ссылка на пользователя по номеру телефона.
+        val link = Uri.parse("https://t.me/+$digits")
+        val opened = tryStart(
+            Intent(Intent.ACTION_VIEW, link).setPackage("org.telegram.messenger")
+        )
+
+        if (!opened) showMessage("Telegram не установлен")
+    }
+
+    private fun openSms(phone: String) {
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone"))
+        if (!tryStart(intent)) showMessage("Приложение для SMS не найдено")
+    }
+
+    private fun openMax(phone: String) {
+        // Не подменяем открытие нужного чата простым запуском MAX:
+        // сначала явно предупреждаем пользователя об ограничении.
+        AlertDialog.Builder(this)
+            .setMessage(
+                "Открытие чата MAX по номеру не настроено: для этого нужна " +
+                        "подтверждённая схема ссылок MAX. Можно скопировать номер и открыть приложение."
+            )
+            .setNegativeButton("Отмена", null)
+            .setPositiveButton("Скопировать и открыть") { _, _ ->
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Номер телефона", phone))
+
+                val launchIntent = packageManager.getLaunchIntentForPackage("ru.oneme.app")
+                if (launchIntent == null || !tryStart(launchIntent)) {
+                    showMessage("Номер скопирован, но MAX не найден")
+                }
+            }
+            .show()
+    }
+
+    private fun openCall(phone: String) {
+        val opened = tryStart(
+            Intent(Intent.ACTION_DIAL, "tel: $phone".toUri())
+        )
+        if (!opened) showMessage("Не удалось совершить вызов")
+    }
+
+    private fun tryStart(intent: Intent): Boolean =
+        try {
+            startActivity(intent)
+            true
+        } catch (_: ActivityNotFoundException) {
+            false
+        } catch (_: SecurityException) {
+            false
+        }
+
+    private fun showMessage(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+
 
     fun showSnackBar(text: String, isError: Boolean){
         val view = binding.root
