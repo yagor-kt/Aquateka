@@ -1,7 +1,5 @@
 package com.subefu.aquateka.model.domain.usecase
 
-import android.util.Log
-import com.subefu.aquateka.App
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AddressRepository
 import com.subefu.aquateka.model.data.repository.AppEventBus
@@ -9,7 +7,6 @@ import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.repository.Repository
 import com.subefu.aquateka.model.domain.utill.tryExecuteOrSendErrorMessage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SetAddressVisitUseCase(
@@ -18,17 +15,17 @@ class SetAddressVisitUseCase(
 ) {
 
     fun execute(visit: Visit) {
-        addressRepository.getAddressFromCoordinates(visit.latitude, visit.longitude) { address ->
-            tryExecuteOrSendErrorMessage("Ошибка записи в БД внутри колбэка. "){
-                val finalAddress = address ?: "-"
-                val updateVisit = visit.copy(address = finalAddress)
+        tryExecuteOrSendErrorMessage("Не удалось определить адрес визита. "){
+            val address = addressRepository.getAddressFromCoordinates(
+                visit.latitude,
+                visit.longitude
+            ) ?: "-"
 
-                withContext(Dispatchers.IO){
-                    repository.updateVisit(updateVisit)
-                }
-
-                AppEventBus.post(AppMessage.Success("Адрес визита определен"))
+            withContext(Dispatchers.IO) {
+                repository.updateVisit(visit.copy(address = address))
             }
+
+            AppEventBus.post(AppMessage.Success("Адрес визита определен"))
         }
     }
 }

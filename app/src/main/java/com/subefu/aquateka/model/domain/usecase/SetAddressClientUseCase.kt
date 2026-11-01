@@ -15,17 +15,17 @@ class SetAddressClientUseCase(
 ) {
 
     fun execute(client: Client) {
-        addressRepository.getAddressFromCoordinates(client.latitude, client.longitude) { address ->
-            tryExecuteOrSendErrorMessage("Не удалось определить адрес клиента. ") {
-                val finalAddress = address ?: "-"
-                val updateClient = client.copy(address = finalAddress)
+        tryExecuteOrSendErrorMessage("Не удалось определить адрес клиента. "){
+            val address = addressRepository.getAddressFromCoordinates(
+                client.latitude,
+                client.longitude
+            ) ?: "-"
 
-                withContext(Dispatchers.IO) {
-                    repository.updateClient(updateClient)
-                }
-
-                AppEventBus.post(AppMessage.Success("Адрес клиента определен"))
+            withContext(Dispatchers.IO) {
+                repository.updateClient(client.copy(address = address))
             }
+
+            AppEventBus.post(AppMessage.Success("Адрес клиента определен"))
         }
     }
 }

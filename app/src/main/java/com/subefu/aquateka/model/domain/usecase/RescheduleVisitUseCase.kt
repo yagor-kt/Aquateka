@@ -1,6 +1,5 @@
 package com.subefu.aquateka.model.domain.usecase
 
-import com.subefu.aquateka.App
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AppEventBus
 import com.subefu.aquateka.model.domain.utill.MyConst

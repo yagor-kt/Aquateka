@@ -9,26 +9,24 @@ import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import com.yandex.mapkit.search.Session
-
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class AddressRepository {
-    private val searchManager: SearchManager = SearchFactory.getInstance()
-        .createSearchManager(SearchManagerType.ONLINE)
 
-    private var searchSession: Session? = null
+    private val searchManager: SearchManager =
+        SearchFactory.getInstance().createSearchManager(SearchManagerType.ONLINE)
 
-    fun getAddressFromCoordinates(
+    suspend fun getAddressFromCoordinates(
         latitude: Double,
-        longitude: Double,
-        onResult: (String?) -> Unit
-    ) {
+        longitude: Double
+    ): String? = suspendCancellableCoroutine { cont ->
+
         val targetPoint = Point(latitude, longitude)
         val searchOptions = SearchOptions().apply {
             searchTypes = SearchType.GEO.value
-            resultPageSize = 1
         }
 
-        searchSession = searchManager.submit(
+        val session = searchManager.submit(
             targetPoint,
             null,
             searchOptions,
@@ -40,13 +38,21 @@ class AddressRepository {
                         ?.address
                         ?.formattedAddress
 
-                    onResult(addressText)
+                    if (cont.isActive) {
+                        cont.resume(addressText, null)
+                    }
                 }
 
                 override fun onSearchError(error: com.yandex.runtime.Error) {
-                    onResult(null)
+                    if (cont.isActive) {
+                        cont.resume(null, null)
+                    }
                 }
             }
         )
+
+        cont.invokeOnCancellation {
+            session.cancel()
+        }
     }
 }
