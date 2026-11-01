@@ -1,4 +1,4 @@
-package com.subefu.aquateka.model.domain
+package com.subefu.aquateka.model.domain.utill
 
 abstract class MyConst{
     companion object{
