@@ -191,7 +191,7 @@ class VisitsFragment : Fragment() {
             val newList = currentVisits.filter {
                 it.client.name.contains(searchText, true) ||
                         it.client.phone.contains(searchText, true) ||
-                        ("${it.client.latitude} ${it.client.longitude}").contains(searchText, true)
+                        ("${it.visit.latitude} ${it.visit.longitude}").contains(searchText, true)
             }
             rvAdapter.updateList(newList)
             updateShortInfo(newList)

@@ -150,7 +150,6 @@ class ProfileClientActivity : AppCompatActivity() {
             .setItems(phones.toTypedArray()){ dialog, which ->
                 val phone = phones[which]
                 openPhoneMenu(phone)
-//                goToCallOnNumber(phone)
             }
             .setNegativeButton("Закрыть") { dialog, _ ->
                 dialog.dismiss()
@@ -173,7 +172,11 @@ class ProfileClientActivity : AppCompatActivity() {
 
     private fun openPhoneMenu(rawPhone: String) {
         // На входе ожидается международный номер: +79991234567.
-        val phone = "+" + rawPhone.filter(Char::isDigit).replaceFirst("8", "7")
+        var correctPhone = rawPhone
+        if (correctPhone.startsWith("8"))
+            correctPhone = correctPhone.replaceFirst("8", "7")
+
+        val phone = "+" + correctPhone.filter(Char::isDigit)
 
         if (!Regex("^\\+[1-9]\\d{7,14}$").matches(phone)) {
             Toast.makeText(this, "Укажите номер в международном формате", Toast.LENGTH_SHORT).show()
@@ -197,16 +200,21 @@ class ProfileClientActivity : AppCompatActivity() {
     }
 
     private fun openWhatsApp(digits: String) {
-        val link = Uri.parse("https://wa.me/$digits")
+        if (digits.isBlank()) {
+            Toast.makeText(this, "Некорректный номер", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        // Обычный WhatsApp; если его нет — WhatsApp Business.
-        val opened = tryStart(
-            Intent(Intent.ACTION_VIEW, link).setPackage("com.whatsapp")
-        ) || tryStart(
-            Intent(Intent.ACTION_VIEW, link).setPackage("com.whatsapp.w4b")
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://wa.me/$digits")
         )
 
-        if (!opened) showMessage("WhatsApp не установлен")
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Не найдено приложение для открытия ссылки", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun openTelegram(digits: String) {
