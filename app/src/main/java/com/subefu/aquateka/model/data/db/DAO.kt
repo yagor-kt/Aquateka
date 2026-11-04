@@ -6,11 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import androidx.room.Upsert
 import com.subefu.aquateka.model.data.entity.ClientEntity
 import com.subefu.aquateka.model.data.entity.VisitEntity
 import com.subefu.aquateka.model.data.entity.VisitWithClientEntity
-import com.subefu.aquateka.model.domain.model.Visit
 import kotlinx.coroutines.flow.Flow
 
 

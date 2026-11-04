@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.subefu.aquateka.model.domain.MyConst
 
 @Entity(
     tableName = "Visit",

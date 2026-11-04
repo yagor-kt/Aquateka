@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentManager
-import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.utill.MyConst
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.fragment.VisitInfoFragment

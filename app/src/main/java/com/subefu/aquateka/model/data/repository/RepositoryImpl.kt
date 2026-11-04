@@ -1,6 +1,5 @@
 package com.subefu.aquateka.model.data.repository
 
-import android.content.Context
 import android.util.Log
 import com.subefu.aquateka.model.data.db.DAO
 import com.subefu.aquateka.model.data.db.utill.toEntity
@@ -9,7 +8,6 @@ import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
 import com.subefu.aquateka.model.domain.repository.Repository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -30,7 +28,7 @@ class RepositoryImpl(val dao: DAO): Repository {
             .map { it.map { it.toModel() } }
     }
 
-    override fun getAllIDClients(): List<Int> {
+    override suspend fun getAllIDClients(): List<Int> {
         return dao.getAllIDClients()
     }
 
@@ -45,10 +43,10 @@ class RepositoryImpl(val dao: DAO): Repository {
     }
 
 
-    override fun insertVisits(visits: List<Visit>) {
+    override suspend fun insertVisits(visits: List<Visit>) {
         dao.insertVisits(visits.map { it.toEntity() })
     }
-    override fun insertClients(clients: List<Client>) {
+    override suspend fun insertClients(clients: List<Client>) {
         dao.insertClients(clients.map { it.toEntity() })
     }
 

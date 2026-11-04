@@ -26,10 +26,10 @@ import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.FragmentOrdersBinding
 import com.subefu.aquateka.model.data.db.utill.AppMessage
 import com.subefu.aquateka.model.data.repository.AppEventBus
-import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.utill.MyConst
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
-import com.subefu.aquateka.model.domain.utill.ImportExportState
+import com.subefu.aquateka.view.utils.ImportExportState
 import com.subefu.aquateka.view.activity.CreateVisitActivity
 import com.subefu.aquateka.view.adapter.VisitCardAdapter
 import com.subefu.aquateka.view.utils.TopBottomPaddingDecoration

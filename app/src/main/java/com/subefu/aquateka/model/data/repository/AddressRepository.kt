@@ -1,6 +1,5 @@
 package com.subefu.aquateka.model.data.repository
 
-import android.util.Log
 import com.yandex.mapkit.GeoObject
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.search.Response
@@ -10,30 +9,24 @@ import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import com.yandex.mapkit.search.Session
-import kotlinx.coroutines.Deferred
-
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class AddressRepository {
-    private val searchManager: SearchManager = SearchFactory.getInstance()
-        .createSearchManager(SearchManagerType.ONLINE)
 
-    // Держим ссылку на сессию на уровне репозитория, чтобы GC её не удалил
-    private var searchSession: Session? = null
+    private val searchManager: SearchManager =
+        SearchFactory.getInstance().createSearchManager(SearchManagerType.ONLINE)
 
-    // Функция принимает callback, который отработает по завершении
-    fun getAddressFromCoordinates(
+    suspend fun getAddressFromCoordinates(
         latitude: Double,
-        longitude: Double,
-        onResult: (String?) -> Unit
-    ) {
-        Log.d("MyYandex", "Запуск прямого запроса в Яндекс...")
+        longitude: Double
+    ): String? = suspendCancellableCoroutine { cont ->
+
         val targetPoint = Point(latitude, longitude)
         val searchOptions = SearchOptions().apply {
             searchTypes = SearchType.GEO.value
-            resultPageSize = 1
         }
 
-        searchSession = searchManager.submit(
+        val session = searchManager.submit(
             targetPoint,
             null,
             searchOptions,
@@ -45,15 +38,21 @@ class AddressRepository {
                         ?.address
                         ?.formattedAddress
 
-                    Log.d("MyYandex", "Яндекс ответил успехом: $addressText")
-                    onResult(addressText)
+                    if (cont.isActive) {
+                        cont.resume(addressText, null)
+                    }
                 }
 
                 override fun onSearchError(error: com.yandex.runtime.Error) {
-                    Log.d("MyYandex", "Яндекс ответил ошибкой: $error")
-                    onResult(null)
+                    if (cont.isActive) {
+                        cont.resume(null, null)
+                    }
                 }
             }
         )
+
+        cont.invokeOnCancellation {
+            session.cancel()
+        }
     }
 }

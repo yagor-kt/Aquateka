@@ -2,15 +2,11 @@ package com.subefu.aquateka.model.data.db
 
 import android.content.Context
 import androidx.room.AutoMigration
-import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.RenameColumn
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.room.migration.AutoMigrationSpec
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import com.subefu.aquateka.model.data.db.dao.ClientsDao
+import com.subefu.aquateka.model.data.db.dao.VisitsDao
 import com.subefu.aquateka.model.data.entity.ClientEntity
 import com.subefu.aquateka.model.data.entity.VisitEntity
 
@@ -22,6 +18,9 @@ import com.subefu.aquateka.model.data.entity.VisitEntity
 )
 abstract class DataBase: RoomDatabase() {
     abstract fun getDao(): DAO
+    abstract fun getClientsDao(): ClientsDao
+    abstract fun getVisitsDao(): VisitsDao
+
     companion object{
         @Volatile
         private var INSTANCE: DataBase? = null

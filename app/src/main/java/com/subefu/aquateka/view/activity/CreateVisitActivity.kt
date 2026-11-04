@@ -22,7 +22,7 @@ import com.subefu.aquateka.App
 import com.subefu.aquateka.databinding.ActivityCreateOrderBinding
 import com.subefu.aquateka.model.data.db.DataBase
 import com.subefu.aquateka.model.data.repository.RepositoryImpl
-import com.subefu.aquateka.model.domain.MyConst
+import com.subefu.aquateka.model.domain.utill.MyConst
 import com.subefu.aquateka.model.domain.model.Client
 import com.subefu.aquateka.model.domain.model.Visit
 import com.subefu.aquateka.model.domain.model.VisitWithClient
